@@ -1,0 +1,11 @@
+{
+  "project_name": "prajna-ksp-platform",
+  "client": {
+    "source": "frontend/dist"
+  },
+  "functions": {
+    "targets": [
+      "prajna-api"
+    ]
+  }
+}
