@@ -19,10 +19,8 @@ This backend integrates:
 8. Anomaly alerts
 
 The current system uses deterministic mock intelligence data and
-in-memory Memory Weaving storage.
-
-The architecture is designed so the mock data and memory layer can
-later be replaced by persistent Zoho Catalyst storage.
+in-memory Memory Weaving storage. Data layer is decoupled and can
+be replaced by any persistent database without touching API routes.
 """
 
 from datetime import datetime, timezone
@@ -47,6 +45,7 @@ from mock_db import (
     get_fir_by_id,
     get_network_data,
     get_suspect_by_id,
+    get_stats,
 )
 
 from pressure_engine import (
@@ -75,6 +74,11 @@ app = FastAPI(
 # CORS
 # ---------------------------------------------------------------------------
 
+import os
+
+_raw_origins = os.getenv("CORS_ORIGINS", "")
+_extra = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -82,10 +86,11 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        *_extra,
     ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "Authorization"],
 )
 
 
@@ -175,9 +180,7 @@ def root():
         "full_name": (
             "Predictive Reasoning & Adaptive Justice Network for Action"
         ),
-        "description": (
-            "KSP Datathon 2026 Crime Intelligence Platform"
-        ),
+        "description": "KSP Datathon 2026 — Crime Intelligence API",
         "status": "online",
         "version": "2.0.0",
         "timestamp": datetime.now(
@@ -637,6 +640,18 @@ def get_alerts():
         ),
         "anomaly_threshold": 0.70,
     }
+
+
+# ---------------------------------------------------------------------------
+# GET /api/stats
+# ---------------------------------------------------------------------------
+
+@app.get("/api/stats")
+def api_stats():
+    """
+    Return platform-wide summary statistics for the dashboard.
+    """
+    return get_stats()
 
 
 # ---------------------------------------------------------------------------

@@ -5,26 +5,28 @@ Built for KSP Datathon 2026 · Challenges 01 & 02
 
 ---
 
-PRAJNA (Predictive Reasoning & Adaptive Justice Network for Action) is a full-stack intelligence platform that gives investigators a conversational interface over crime data, while command centers get real-time pressure analytics across Karnataka — both powered by a shared Crime Intelligence Graph.
+PRAJNA (Predictive Reasoning & Adaptive Justice Network for Action) gives investigators a conversational interface over crime data while command centers get real-time pressure analytics across Karnataka — both powered by a shared Crime Intelligence Graph.
+
+The platform currently covers **8 suspects**, **11 FIRs**, and **10 monitored zones** across **5 districts** (Bengaluru Urban, Mysuru, Hubli-Dharwad, Kalaburagi, Mangaluru).
 
 ---
 
 ## Features
 
-**Case Canvas**  
-A zoomable, force-directed graph built with D3.js. Nodes are color-coded by entity type — suspects, FIRs, locations, and evidence. Click any node to inspect linked records.
-
-**AI Chat & Voice Query**  
-Officers query the graph by typing or speaking. Voice input uses the browser's Web Speech API and supports English (`en-IN`) and Kannada (`kn-IN`).
+**Case Canvas & Chat**  
+Officers type or speak a query in English or Kannada. The backend processes it, returns a text answer plus graph data, and the UI renders a live D3.js force-directed knowledge graph — connecting suspects, FIRs, locations, and evidence in real time.
 
 **Crime Pressure Map**  
-A Leaflet.js heatmap that scores districts by risk factors — bail releases, upcoming festivals, economic stress, and new ATM installations — updated on each session load.
+A Leaflet.js heatmap that scores districts by four risk factors — bail releases, upcoming festivals, economic stress, and new ATM installations. Zones above the alert threshold surface as active warnings on the dashboard.
 
-**Memory Weaving Engine**  
-Every query and AI finding is logged as a persistent memory thread tied to the officer's session, surfaced later in the Officer Profile page.
+**Memory Weaving**  
+Every query and AI finding is logged as an immutable memory thread tied to the officer's session. Accessible later from the Officer Profile page for audit and review.
 
 **Intelligence Brief Export**  
-One-click PDF generation via jsPDF. Includes an Officer Dissent Flag field for inline feedback on AI findings.
+One-click PDF generation from the current session. Includes an Officer Dissent Flag field for inline disagreement with AI findings — supporting human-in-the-loop accountability.
+
+**Auth & Sessions**  
+Login screen with officer ID and name. Session data stored in localStorage — no backend auth table required for the demo. Swap in JWT when a real user store is available.
 
 ---
 
@@ -33,39 +35,40 @@ One-click PDF generation via jsPDF. Includes an Officer Dissent Flag field for i
 ```
 prajna/
 ├── backend/
-│   ├── main.py              # FastAPI application, routes, CORS
-│   ├── mock_db.py           # Crime dataset — suspects, FIRs, zones
+│   ├── main.py              # FastAPI routes, CORS, request models
+│   ├── mock_db.py           # Crime dataset + get_stats(), get_network_data()
 │   ├── query_engine.py      # Pattern-based NLP query processor
 │   ├── pressure_engine.py   # District pressure score calculator
 │   ├── memory_weaving.py    # Session memory logger
 │   └── requirements.txt
 ├── frontend/
-│   ├── index.html           # Entry point; loads Tailwind, D3, Leaflet via CDN
+│   ├── index.html           # Loads Tailwind, D3, Leaflet, jsPDF via CDN
+│   ├── vercel.json          # SPA rewrite rule for Vercel deployment
 │   ├── vite.config.js
 │   ├── package.json
 │   └── src/
 │       ├── App.jsx
 │       ├── context/
-│       │   └── AuthContext.jsx      # Officer session management
+│       │   └── AuthContext.jsx
 │       ├── components/
-│       │   ├── CaseCanvas.jsx       # D3 force graph
-│       │   ├── ChatPanel.jsx        # Query interface + memory logging
-│       │   ├── VoiceInput.jsx       # Web Speech API wrapper
-│       │   ├── PressureMap.jsx      # Leaflet heatmap
-│       │   ├── IntelligenceBrief.jsx
-│       │   ├── Sidebar.jsx
+│       │   ├── CaseCanvas.jsx        # D3 force graph
+│       │   ├── ChatPanel.jsx         # Query interface + memory
+│       │   ├── VoiceInput.jsx        # Web Speech API (en-IN, kn-IN)
+│       │   ├── PressureMap.jsx       # Leaflet heatmap
+│       │   ├── IntelligenceBrief.jsx # jsPDF export + dissent flag
+│       │   ├── Sidebar.jsx           # Navigation + live alert badge
 │       │   └── ProtectedRoute.jsx
 │       ├── pages/
 │       │   ├── Login.jsx
 │       │   ├── DashboardLayout.jsx
-│       │   ├── HomePage.jsx
+│       │   ├── HomePage.jsx          # Stats cards + alerts panel
 │       │   ├── ChatCanvasPage.jsx
 │       │   ├── PressureMapPage.jsx
 │       │   └── ProfilePage.jsx
 │       └── utils/
-│           ├── api.js               # API client
-│           └── tts.js               # Text-to-speech helper
-└── catalyst.json
+│           ├── api.js                # Fetch client (uses VITE_API_URL)
+│           └── tts.js
+└── render.yaml                       # Render deployment config (backend)
 ```
 
 ---
@@ -82,8 +85,8 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-API available at `http://localhost:8000`  
-Interactive docs at `http://localhost:8000/docs`
+API: `http://localhost:8000`  
+Interactive docs: `http://localhost:8000/docs`
 
 **Frontend**
 
@@ -93,48 +96,61 @@ npm install
 npm run dev
 ```
 
-App available at `http://localhost:5173`
+App: `http://localhost:5173`
+
+The frontend reads `VITE_API_URL` for the backend address. In development it falls back to `http://localhost:8000/api` automatically.
 
 ---
 
 ## Deployment
 
-PRAJNA is configured for Zoho Catalyst — the Python backend runs as an AppSail container, and the React frontend is served via Catalyst's static hosting.
+**Frontend → Vercel**
 
-**1. Install the Catalyst CLI**
+1. Import the GitHub repo in [vercel.com](https://vercel.com)
+2. Set root directory to `frontend`
+3. Add environment variable: `VITE_API_URL=https://your-render-url.onrender.com/api`
+4. Deploy
 
-```bash
-npm install -g zcatalyst-cli
-```
+The `vercel.json` in the frontend folder handles SPA routing automatically.
 
-**2. Authenticate**
+**Backend → Render**
 
-```bash
-catalyst login
-```
+1. Connect the GitHub repo in [render.com](https://render.com)
+2. Create a new **Web Service**, root directory `backend`
+3. Render reads `render.yaml` for build and start commands automatically
+4. After deploy, copy the Render service URL and paste it into Vercel's `VITE_API_URL`
+5. Add `CORS_ORIGINS=https://your-vercel-url.vercel.app` as an environment variable in Render
 
-**3. Build the frontend**
+---
 
-```bash
-cd frontend && npm run build
-```
+## API Reference
 
-**4. Deploy**
-
-```bash
-catalyst deploy
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/stats` | Platform-wide summary (suspects, FIRs, zones, alerts) |
+| `POST` | `/api/query` | Process an investigator query |
+| `GET` | `/api/network` | Full knowledge graph (nodes + edges) |
+| `GET` | `/api/pressure` | Crime pressure scores for all zones |
+| `GET` | `/api/alerts` | Active high-pressure zone alerts |
+| `GET` | `/api/suspects` | All suspect records |
+| `GET` | `/api/firs` | All FIR records |
+| `GET` | `/api/suspect/{id}` | Single suspect with linked FIR details |
+| `GET` | `/api/fir/{id}` | Single FIR record |
+| `GET` | `/api/memory/{officer_id}` | Query history for an officer |
+| `POST` | `/api/memory/dissent` | Record officer dissent on an AI finding |
 
 ---
 
 ## Sample Queries
 
-| Query | What it returns |
-|---|---|
+| Query | Returns |
+|-------|---------|
 | `Show Raju Kumar network` | Suspect profile + connected FIRs and locations |
 | `Crime in Whitefield` | All incidents linked to that jurisdiction |
 | `Show recent theft FIRs` | Filtered FIR list by offense type |
-| `Which suspects are on bail?` | Bail status across the dataset |
+| `Which suspects are on bail?` | Bail status across all suspects |
+| `Absconding suspects` | Suspects with active warrant / absconding status |
+| `Show cybercrime cases` | FIRs filtered by cybercrime type |
 | `Top crime pressure hotspots` | Highest-scoring districts from the pressure engine |
 
 ---
@@ -142,12 +158,12 @@ catalyst deploy
 ## Tech Stack
 
 | Layer | Technology |
-|---|---|
+|-------|------------|
 | Frontend | React 19, Vite 8, Tailwind CSS, React Router 6 |
 | Visualization | D3.js v7 (CDN), Leaflet.js 1.9 |
-| PDF Export | jsPDF 2.5 |
+| PDF Export | jsPDF |
 | Backend | Python 3.11, FastAPI, Uvicorn |
-| Deployment | Zoho Catalyst (AppSail + Static Hosting) |
+| Deployment | Vercel (frontend) + Render (backend) |
 
 ---
 

@@ -5,8 +5,10 @@ PRAJNA — Mock Database
 Centralized mock data layer for the PRAJNA Crime Intelligence Platform.
 
 This module keeps all mock data separate from the FastAPI application so
-that the data layer can later be replaced by Zoho Catalyst Data Store,
-a relational database, or another persistent database.
+that the data layer can be replaced by any persistent database without
+changing the API routes.
+
+Coverage: 8 suspects, 11 FIRs, 8 districts across Karnataka.
 """
 
 from copy import deepcopy
@@ -129,6 +131,78 @@ SUSPECTS = {
         "description": (
             "High-risk absconding suspect linked to fraud, theft, and "
             "ATM skimming cases."
+        ),
+    },
+    "S005": {
+        "id": "S005",
+        "name": "Deepa Hegde",
+        "aliases": ["Deepa"],
+        "risk_level": "medium",
+        "status": "active",
+        "bail_status": "on_bail",
+        "bail_release_date": "2024-10-20",
+        "district": "Hubli-Dharwad",
+        "known_associates": ["S007"],
+        "linked_firs": ["KA/HBL/2024/001"],
+        "crime_types": ["chain snatching", "pickpocketing"],
+        "known_locations": ["Hubli Old Town", "Dharwad"],
+        "description": (
+            "Active suspect in Hubli-Dharwad region, primarily involved in "
+            "chain snatching and pickpocketing near crowded markets."
+        ),
+    },
+    "S006": {
+        "id": "S006",
+        "name": "Srinivas Rao",
+        "aliases": ["Srini", "S. Rao"],
+        "risk_level": "high",
+        "status": "active",
+        "bail_status": "not_on_bail",
+        "bail_release_date": None,
+        "district": "Bengaluru Urban",
+        "known_associates": ["S004"],
+        "linked_firs": ["KA/BLR/2024/006", "KA/BLR/2024/007"],
+        "crime_types": ["cybercrime", "online fraud", "identity theft"],
+        "known_locations": ["Koramangala", "HSR Layout"],
+        "description": (
+            "High-risk suspect specialising in online fraud and identity theft "
+            "targeting salaried professionals in Bengaluru tech corridors."
+        ),
+    },
+    "S007": {
+        "id": "S007",
+        "name": "Basavaraju K",
+        "aliases": ["Basava"],
+        "risk_level": "high",
+        "status": "active",
+        "bail_status": "not_on_bail",
+        "bail_release_date": None,
+        "district": "Kalaburagi",
+        "known_associates": ["S005"],
+        "linked_firs": ["KA/KLB/2024/001"],
+        "crime_types": ["assault", "extortion"],
+        "known_locations": ["Kalaburagi City", "Gulbarga Market"],
+        "description": (
+            "High-risk suspect with a history of violent assault and extortion "
+            "in the Kalaburagi district."
+        ),
+    },
+    "S008": {
+        "id": "S008",
+        "name": "Ayesha Khan",
+        "aliases": ["Ayesha"],
+        "risk_level": "medium",
+        "status": "active",
+        "bail_status": "on_bail",
+        "bail_release_date": "2024-09-15",
+        "district": "Mangaluru",
+        "known_associates": [],
+        "linked_firs": ["KA/MGR/2024/001"],
+        "crime_types": ["document forgery", "fraud"],
+        "known_locations": ["Mangaluru Port Area", "Hampankatta"],
+        "description": (
+            "Medium-risk suspect involved in document forgery and financial "
+            "fraud in Mangaluru."
         ),
     },
 }
@@ -285,6 +359,101 @@ FIRS = {
             "and Vikram Shetty."
         ),
     },
+    "KA/HBL/2024/001": {
+        "fir_id": "KA/HBL/2024/001",
+        "short_id": "HBL001",
+        "district": "Hubli-Dharwad",
+        "police_station": "Hubli Old Town Police Station",
+        "year": 2024,
+        "crime_type": "chain snatching",
+        "crime_types": ["chain snatching"],
+        "location": "Hubli Old Town",
+        "date": "2024-09-03",
+        "status": "under_investigation",
+        "suspect_ids": ["S005"],
+        "suspect_names": ["Deepa Hegde"],
+        "evidence_ids": ["E011"],
+        "description": (
+            "Chain snatching incident in Hubli Old Town market area. "
+            "Deepa Hegde identified from CCTV footage."
+        ),
+    },
+    "KA/BLR/2024/006": {
+        "fir_id": "KA/BLR/2024/006",
+        "short_id": "006",
+        "district": "Bengaluru Urban",
+        "police_station": "Koramangala Police Station",
+        "year": 2024,
+        "crime_type": "cybercrime",
+        "crime_types": ["cybercrime", "online fraud"],
+        "location": "Koramangala",
+        "date": "2024-09-18",
+        "status": "under_investigation",
+        "suspect_ids": ["S006"],
+        "suspect_names": ["Srinivas Rao"],
+        "evidence_ids": ["E012", "E013"],
+        "description": (
+            "Online fraud case filed by multiple victims in Koramangala. "
+            "Srinivas Rao linked through digital payment trail."
+        ),
+    },
+    "KA/BLR/2024/007": {
+        "fir_id": "KA/BLR/2024/007",
+        "short_id": "007",
+        "district": "Bengaluru Urban",
+        "police_station": "HSR Layout Police Station",
+        "year": 2024,
+        "crime_type": "identity theft",
+        "crime_types": ["identity theft", "cybercrime"],
+        "location": "HSR Layout",
+        "date": "2024-10-05",
+        "status": "chargesheeted",
+        "suspect_ids": ["S006"],
+        "suspect_names": ["Srinivas Rao"],
+        "evidence_ids": ["E014"],
+        "description": (
+            "Identity theft case targeting a software engineer in HSR Layout. "
+            "Suspect used cloned SIM and forged KYC documents."
+        ),
+    },
+    "KA/KLB/2024/001": {
+        "fir_id": "KA/KLB/2024/001",
+        "short_id": "KLB001",
+        "district": "Kalaburagi",
+        "police_station": "Kalaburagi City Police Station",
+        "year": 2024,
+        "crime_type": "assault",
+        "crime_types": ["assault", "extortion"],
+        "location": "Kalaburagi City",
+        "date": "2024-10-14",
+        "status": "under_investigation",
+        "suspect_ids": ["S007"],
+        "suspect_names": ["Basavaraju K"],
+        "evidence_ids": ["E015"],
+        "description": (
+            "Assault and extortion complaint filed by a local shopkeeper "
+            "in Kalaburagi. Basavaraju K identified as the primary suspect."
+        ),
+    },
+    "KA/MGR/2024/001": {
+        "fir_id": "KA/MGR/2024/001",
+        "short_id": "MGR001",
+        "district": "Mangaluru",
+        "police_station": "Mangaluru Port Police Station",
+        "year": 2024,
+        "crime_type": "document forgery",
+        "crime_types": ["document forgery", "fraud"],
+        "location": "Mangaluru Port Area",
+        "date": "2024-11-01",
+        "status": "under_investigation",
+        "suspect_ids": ["S008"],
+        "suspect_names": ["Ayesha Khan"],
+        "evidence_ids": ["E016"],
+        "description": (
+            "Document forgery case involving fake shipping manifests. "
+            "Ayesha Khan linked through handwriting analysis and digital records."
+        ),
+    },
 }
 
 
@@ -331,6 +500,46 @@ LOCATIONS = {
         "district": "Bengaluru Urban",
         "latitude": 12.8452,
         "longitude": 77.6602,
+        "type": "crime_location",
+    },
+    "L006": {
+        "id": "L006",
+        "name": "Hubli Old Town",
+        "district": "Hubli-Dharwad",
+        "latitude": 15.3647,
+        "longitude": 75.1240,
+        "type": "crime_location",
+    },
+    "L007": {
+        "id": "L007",
+        "name": "Koramangala",
+        "district": "Bengaluru Urban",
+        "latitude": 12.9352,
+        "longitude": 77.6245,
+        "type": "crime_location",
+    },
+    "L008": {
+        "id": "L008",
+        "name": "HSR Layout",
+        "district": "Bengaluru Urban",
+        "latitude": 12.9116,
+        "longitude": 77.6474,
+        "type": "crime_location",
+    },
+    "L009": {
+        "id": "L009",
+        "name": "Kalaburagi City",
+        "district": "Kalaburagi",
+        "latitude": 17.3297,
+        "longitude": 76.8343,
+        "type": "crime_location",
+    },
+    "L010": {
+        "id": "L010",
+        "name": "Mangaluru Port Area",
+        "district": "Mangaluru",
+        "latitude": 12.9141,
+        "longitude": 74.8560,
         "type": "crime_location",
     },
 }
@@ -410,6 +619,42 @@ EVIDENCE = {
         "type": "CCTV",
         "description": "ATM surveillance footage from Whitefield",
         "linked_firs": ["KA/BLR/2024/005"],
+    },
+    "E011": {
+        "id": "E011",
+        "type": "CCTV",
+        "description": "CCTV footage from Hubli Old Town market identifying suspect",
+        "linked_firs": ["KA/HBL/2024/001"],
+    },
+    "E012": {
+        "id": "E012",
+        "type": "digital",
+        "description": "Payment gateway logs showing fraudulent transactions",
+        "linked_firs": ["KA/BLR/2024/006"],
+    },
+    "E013": {
+        "id": "E013",
+        "type": "digital",
+        "description": "IP address records from fraud server traced to suspect",
+        "linked_firs": ["KA/BLR/2024/006"],
+    },
+    "E014": {
+        "id": "E014",
+        "type": "document",
+        "description": "Forged KYC documents used for SIM card cloning",
+        "linked_firs": ["KA/BLR/2024/007"],
+    },
+    "E015": {
+        "id": "E015",
+        "type": "witness",
+        "description": "Victim statement and two independent witness statements",
+        "linked_firs": ["KA/KLB/2024/001"],
+    },
+    "E016": {
+        "id": "E016",
+        "type": "document",
+        "description": "Handwriting analysis report and forged shipping manifests",
+        "linked_firs": ["KA/MGR/2024/001"],
     },
 }
 
@@ -594,6 +839,31 @@ ECONOMIC_STRESS = {
         "index": 0.68,
         "trend": "rising",
     },
+    "Hubli Old Town": {
+        "district": "Hubli-Dharwad",
+        "index": 0.52,
+        "trend": "rising",
+    },
+    "Koramangala": {
+        "district": "Bengaluru Urban",
+        "index": 0.44,
+        "trend": "stable",
+    },
+    "HSR Layout": {
+        "district": "Bengaluru Urban",
+        "index": 0.40,
+        "trend": "stable",
+    },
+    "Kalaburagi City": {
+        "district": "Kalaburagi",
+        "index": 0.70,
+        "trend": "rising",
+    },
+    "Mangaluru Port Area": {
+        "district": "Mangaluru",
+        "index": 0.58,
+        "trend": "stable",
+    },
 }
 
 
@@ -669,6 +939,41 @@ PRESSURE_ZONES = [
         "district": "Bengaluru Urban",
         "latitude": 12.8452,
         "longitude": 77.6602,
+    },
+    {
+        "zone_id": "Z006",
+        "zone_name": "Hubli Old Town",
+        "district": "Hubli-Dharwad",
+        "latitude": 15.3647,
+        "longitude": 75.1240,
+    },
+    {
+        "zone_id": "Z007",
+        "zone_name": "Koramangala",
+        "district": "Bengaluru Urban",
+        "latitude": 12.9352,
+        "longitude": 77.6245,
+    },
+    {
+        "zone_id": "Z008",
+        "zone_name": "HSR Layout",
+        "district": "Bengaluru Urban",
+        "latitude": 12.9116,
+        "longitude": 77.6474,
+    },
+    {
+        "zone_id": "Z009",
+        "zone_name": "Kalaburagi City",
+        "district": "Kalaburagi",
+        "latitude": 17.3297,
+        "longitude": 76.8343,
+    },
+    {
+        "zone_id": "Z010",
+        "zone_name": "Mangaluru Port Area",
+        "district": "Mangaluru",
+        "latitude": 12.9141,
+        "longitude": 74.8560,
     },
 ]
 
@@ -839,4 +1144,51 @@ def get_network_data():
     return {
         "nodes": nodes,
         "edges": edges,
+    }
+
+
+def get_stats():
+    """
+    Return platform-wide summary statistics for the dashboard.
+    """
+    suspects = list(SUSPECTS.values())
+    firs = list(FIRS.values())
+
+    high_risk = sum(1 for s in suspects if s["risk_level"] == "high")
+    on_bail = sum(1 for s in suspects if s["bail_status"] == "on_bail")
+    absconding = sum(1 for s in suspects if s["status"] == "absconding")
+
+    crime_type_counts: dict = {}
+    fir_status_counts: dict = {}
+    for fir in firs:
+        ct = fir["crime_type"]
+        crime_type_counts[ct] = crime_type_counts.get(ct, 0) + 1
+        st = fir["status"]
+        fir_status_counts[st] = fir_status_counts.get(st, 0) + 1
+
+    active_alerts = get_active_alerts()
+    districts = {s["district"] for s in suspects}
+
+    return {
+        "suspects": {
+            "total": len(suspects),
+            "high_risk": high_risk,
+            "on_bail": on_bail,
+            "absconding": absconding,
+        },
+        "firs": {
+            "total": len(firs),
+            "by_type": crime_type_counts,
+            "by_status": fir_status_counts,
+        },
+        "zones": {
+            "total": len(PRESSURE_ZONES),
+        },
+        "districts": {
+            "total": len(districts),
+            "names": sorted(districts),
+        },
+        "alerts": {
+            "active": len(active_alerts),
+        },
     }

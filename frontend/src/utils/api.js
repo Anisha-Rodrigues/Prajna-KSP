@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8000/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 async function handleResponse(res) {
   if (!res.ok) throw new Error(`API error: ${res.status}`);
@@ -9,7 +9,12 @@ export async function sendQuery(query, language, officerId, sessionId) {
   const res = await fetch(`${BASE_URL}/query`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, language, officer_id: officerId, session_id: sessionId }),
+    body: JSON.stringify({
+      query,
+      language,
+      officer_id: officerId,
+      session_id: sessionId,
+    }),
   });
   return handleResponse(res);
 }
@@ -34,11 +39,21 @@ export async function getPressure() {
   return handleResponse(res);
 }
 
+export async function getStats() {
+  const res = await fetch(`${BASE_URL}/stats`);
+  return handleResponse(res);
+}
+
 export async function saveMemory(officerId, query, response, outcome) {
   const res = await fetch(`${BASE_URL}/memory`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ officer_id: officerId, query, response, outcome }),
+    body: JSON.stringify({
+      officer_id: officerId,
+      query,
+      response,
+      outcome,
+    }),
   });
   return handleResponse(res);
 }
