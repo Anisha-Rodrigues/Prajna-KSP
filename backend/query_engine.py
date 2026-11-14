@@ -73,15 +73,37 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
                 {"role": "user", "content": f"Language: {language}\nInvestigator Query: {query}"}
             ],
             model="llama-3.3-70b-versatile",
-            temperature=0.2,
-            response_format={"type": "json_object"}
+            temperature=0.3,
         )
 
-        content = chat_completion.choices[0].message.content
-        parsed = json.loads(content)
+        raw_content = chat_completion.choices[0].message.content.strip()
+        
+        # Try parsing JSON if model returned structured output, else use directly
+        answer = raw_content
+        cited_firs = []
+        matched_suspect_ids = []
 
-        cited_firs = parsed.get("cited_firs", [])
-        matched_suspect_ids = parsed.get("matched_suspect_ids", [])
+        try:
+            # Handle markdown code blocks
+            clean_json = raw_content
+            if "```json" in clean_json:
+                clean_json = clean_json.split("```json")[1].split("```")[0].strip()
+            elif "```" in clean_json:
+                clean_json = clean_json.split("```")[1].split("```")[0].strip()
+            
+            parsed = json.loads(clean_json)
+            if isinstance(parsed, dict):
+                answer = parsed.get("answer", raw_content)
+                cited_firs = parsed.get("cited_firs", [])
+                matched_suspect_ids = parsed.get("matched_suspect_ids", [])
+        except Exception:
+            # If not JSON, find cited FIRs and Suspects via regex/keywords
+            for fir_id in FIRS.keys():
+                if fir_id in raw_content:
+                    cited_firs.append(fir_id)
+            for s_id, s_data in SUSPECTS.items():
+                if s_data["name"].lower() in raw_content.lower() or s_id in raw_content:
+                    matched_suspect_ids.append(s_id)
 
         # Build dynamic nodes for canvas
         network = get_network_data()
@@ -92,7 +114,7 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
                 nodes.append(node)
 
         return {
-            "answer": parsed.get("answer", ""),
+            "answer": answer,
             "nodes": nodes,
             "edges": get_edges_for_nodes([n["id"] for n in nodes]),
             "cited_firs": cited_firs,
@@ -329,10 +351,10 @@ def process_query(
 
     normalized = normalize_query(query)
 
-    # 2. Dynamic conversational greetings & common chatter
-    if any(greet in normalized for greet in ["hi", "hello", "namaskara", "namaste", "hey", "good morning", "good evening"]):
+    # 2. Dynamic conversational greetings & common chatter ONLY if exact match
+    if normalized in ["hi", "hello", "namaskara", "namaste", "hey", "good morning", "good evening", "hii"]:
         return {
-            "answer": "Namaskara Officer. I am PRAJNA, your AI crime intelligence assistant. You can ask me about suspects (e.g. 'Show Raju Kumar or Vikram Shetty'), locations ('Crime in Bengaluru or Whitefield'), active FIRs, suspects on bail, or current high-risk hotspots.",
+            "answer": "Namaskara Officer. I am PRAJNA, your AI crime intelligence assistant powered by Llama 3. Ask me any question about suspects, crime trends, locations, FIRs, or predictive risk zones.",
             "nodes": [],
             "edges": [],
             "cited_firs": [],
