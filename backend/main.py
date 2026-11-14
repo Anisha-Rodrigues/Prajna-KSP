@@ -197,15 +197,14 @@ def root():
 @app.get("/health")
 def health_check():
     """
-    Health check endpoint.
+    Health check endpoint with Groq key verification.
     """
-
+    groq_configured = bool(os.getenv("GROQ_API_KEY", "").strip())
     return {
         "status": "healthy",
         "service": "prajna-api",
-        "timestamp": datetime.now(
-            timezone.utc
-        ).isoformat(),
+        "groq_configured": groq_configured,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 
