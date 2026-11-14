@@ -1,150 +1,156 @@
-# PRAJNA — KSP Crime Intelligence Platform
-**Unified AI Platform built for KSP Datathon 2026 (Challenges 01 & 02)**
+# PRAJNA
 
-PRAJNA (Predictive Reasoning & Adaptive Justice Network for Action) is a unified AI platform that fuses conversational graph reasoning for investigators (Challenge 01) with predictive crime pressure analytics across Karnataka (Challenge 02) through a shared **Crime Intelligence Graph**.
-
----
-
-## 🌟 Key Features
-
-1. **Case Canvas (Spatial Node Graph)**: Full-screen zoomable D3.js force-directed graph with color-coded nodes:
-   - 🔴 **Suspects** (Red)
-   - 🔵 **FIRs** (Blue)
-   - 🟢 **Locations / Jurisdictions** (Green)
-   - 🟡 **Evidence Artifacts** (Yellow)
-2. **Conversational AI & Voice Querying**: Text + Browser-native Web Speech API voice input with automatic language support for **English (`en-IN`)** and **Kannada (`kn-IN`)**.
-3. **Memory Weaving Engine**: Captures every query, AI finding, and outcome tag as an immutable memory thread.
-4. **Crime Pressure Map**: Leaflet.js heatmap & zone breakdown across Karnataka calculating risk score based on:
-   $$\text{Pressure Score} = (\text{Bail Releases} \times 0.4) + (\text{Festivals} \times 0.3) + (\text{Economic Stress} \times 0.2) + (\text{New ATMs} \times 0.1)$$
-5. **Bidirectional Anomaly Alerts**: High-pressure zones detected on the map trigger active alert banners on the Case Canvas chat.
-6. **Intelligence Brief PDF Exporter**: Generates 1-page official PDF reports using jsPDF client-side, featuring an interactive **Officer Dissent Flag** feedback mechanism.
+**Crime Intelligence Platform for Karnataka State Police**  
+Built for KSP Datathon 2026 · Challenges 01 & 02
 
 ---
 
-## 📁 Project Folder Structure
+PRAJNA (Predictive Reasoning & Adaptive Justice Network for Action) is a full-stack intelligence platform that gives investigators a conversational interface over crime data, while command centers get real-time pressure analytics across Karnataka — both powered by a shared Crime Intelligence Graph.
+
+---
+
+## Features
+
+**Case Canvas**  
+A zoomable, force-directed graph built with D3.js. Nodes are color-coded by entity type — suspects, FIRs, locations, and evidence. Click any node to inspect linked records.
+
+**AI Chat & Voice Query**  
+Officers query the graph by typing or speaking. Voice input uses the browser's Web Speech API and supports English (`en-IN`) and Kannada (`kn-IN`).
+
+**Crime Pressure Map**  
+A Leaflet.js heatmap that scores districts by risk factors — bail releases, upcoming festivals, economic stress, and new ATM installations — updated on each session load.
+
+**Memory Weaving Engine**  
+Every query and AI finding is logged as a persistent memory thread tied to the officer's session, surfaced later in the Officer Profile page.
+
+**Intelligence Brief Export**  
+One-click PDF generation via jsPDF. Includes an Officer Dissent Flag field for inline feedback on AI findings.
+
+---
+
+## Project Structure
 
 ```
 prajna/
 ├── backend/
-│   ├── main.py              # FastAPI app with CORS & endpoints
-│   ├── mock_db.py           # Suspects, FIRs, evidence & zone dataset
-│   ├── query_engine.py      # Pattern-matching NLP query processor
-│   ├── memory_weaving.py    # Memory thread logger & dissent tracker
-│   ├── pressure_engine.py   # Crime pressure score calculator
-│   └── requirements.txt     # Python dependencies
+│   ├── main.py              # FastAPI application, routes, CORS
+│   ├── mock_db.py           # Crime dataset — suspects, FIRs, zones
+│   ├── query_engine.py      # Pattern-based NLP query processor
+│   ├── pressure_engine.py   # District pressure score calculator
+│   ├── memory_weaving.py    # Session memory logger
+│   └── requirements.txt
 ├── frontend/
-│   ├── package.json         # React 18, Vite, D3, Leaflet, jsPDF
-│   ├── index.html           # Tailwind CSS CDN + Google Fonts
-│   ├── vite.config.js       # Vite server & API proxy config
+│   ├── index.html           # Entry point; loads Tailwind, D3, Leaflet via CDN
+│   ├── vite.config.js
+│   ├── package.json
 │   └── src/
-│       ├── App.jsx          # Top navbar, state & layout
+│       ├── App.jsx
+│       ├── context/
+│       │   └── AuthContext.jsx      # Officer session management
 │       ├── components/
-│       │   ├── CaseCanvas.jsx        # D3 force-directed spatial graph
-│       │   ├── ChatPanel.jsx         # AI chat & memory weaving sidebar
-│       │   ├── VoiceInput.jsx        # Web Speech API (English & Kannada)
-│       │   ├── PressureMap.jsx font  # Leaflet pressure heatmap & inspector
-│       │   ├── NodeDetail.jsx        # Entity detail side panel
-│       │   └── IntelligenceBrief.jsx # jsPDF generator with dissent flag
+│       │   ├── CaseCanvas.jsx       # D3 force graph
+│       │   ├── ChatPanel.jsx        # Query interface + memory logging
+│       │   ├── VoiceInput.jsx       # Web Speech API wrapper
+│       │   ├── PressureMap.jsx      # Leaflet heatmap
+│       │   ├── IntelligenceBrief.jsx
+│       │   ├── Sidebar.jsx
+│       │   └── ProtectedRoute.jsx
+│       ├── pages/
+│       │   ├── Login.jsx
+│       │   ├── DashboardLayout.jsx
+│       │   ├── HomePage.jsx
+│       │   ├── ChatCanvasPage.jsx
+│       │   ├── PressureMapPage.jsx
+│       │   └── ProfilePage.jsx
 │       └── utils/
-│           └── api.js                # Fetch API client
-├── catalyst/
-│   ├── catalyst-config.json # Zoho Catalyst configuration
-│   └── functions/
-│       └── prajna-api/
-│           ├── index.js     # Express serverless handler
-│           └── package.json
-└── README.md
+│           ├── api.js               # API client
+│           └── tts.js               # Text-to-speech helper
+└── catalyst.json
 ```
 
 ---
 
-## 🚀 How to Run Locally
+## Running Locally
 
-### Prerequisites
-- Python 3.9+ installed
-- Node.js 18+ and `npm` installed
+**Requirements:** Python 3.9+, Node.js 18+
 
-### 1. Run the Python FastAPI Backend
-
-Navigate to the `backend` directory:
+**Backend**
 
 ```bash
 cd backend
-```
-
-Install Python dependencies:
-
-```bash
 pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
 ```
 
-Start the FastAPI backend server:
+API available at `http://localhost:8000`  
+Interactive docs at `http://localhost:8000/docs`
 
-```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-
-*The backend server will run at `http://localhost:8000`. You can test interactive API documentation at `http://localhost:8000/docs`.*
-
----
-
-### 2. Run the React Frontend
-
-Open a new terminal window, and navigate to the `frontend` directory:
+**Frontend**
 
 ```bash
 cd frontend
-```
-
-Install Node dependencies:
-
-```bash
 npm install
-```
-
-Start the Vite development server:
-
-```bash
 npm run dev
 ```
 
-Open your browser and navigate to:
-**`http://localhost:5173`**
+App available at `http://localhost:5173`
 
 ---
 
-## ☁️ Deployment to Zoho Catalyst
+## Deployment
 
-To deploy PRAJNA to Zoho Catalyst (Node.js functions + static web client hosting):
+PRAJNA is configured for Zoho Catalyst — the Python backend runs as an AppSail container, and the React frontend is served via Catalyst's static hosting.
 
-1. **Install Catalyst CLI**:
-   ```bash
-   npm install -g zcatalyst-cli
-   ```
+**1. Install the Catalyst CLI**
 
-2. **Login to Catalyst**:
-   ```bash
-   catalyst login
-   ```
+```bash
+npm install -g zcatalyst-cli
+```
 
-3. **Build Frontend Bundle**:
-   ```bash
-   cd frontend
-   npm run build
-   ```
+**2. Authenticate**
 
-4. **Deploy to Catalyst Project**:
-   From the root `prajna` project folder:
-   ```bash
-   catalyst deploy
-   ```
+```bash
+catalyst login
+```
+
+**3. Build the frontend**
+
+```bash
+cd frontend && npm run build
+```
+
+**4. Deploy**
+
+```bash
+catalyst deploy
+```
 
 ---
 
-## 💡 Example Queries to Try in Case Canvas Chat
+## Sample Queries
 
-- **Suspect Profile & Network**: `"Show Raju Kumar network"`
-- **Location Investigation**: `"Crime in Whitefield"`
-- **Offense Type Filter**: `"Show recent theft FIRs"`
-- **Recidivism & Risk Vectors**: `"Which suspects are currently on bail?"`
-- **Predictive Hotspots**: `"Top crime pressure hotspots"`
+| Query | What it returns |
+|---|---|
+| `Show Raju Kumar network` | Suspect profile + connected FIRs and locations |
+| `Crime in Whitefield` | All incidents linked to that jurisdiction |
+| `Show recent theft FIRs` | Filtered FIR list by offense type |
+| `Which suspects are on bail?` | Bail status across the dataset |
+| `Top crime pressure hotspots` | Highest-scoring districts from the pressure engine |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 19, Vite 8, Tailwind CSS, React Router 6 |
+| Visualization | D3.js v7 (CDN), Leaflet.js 1.9 |
+| PDF Export | jsPDF 2.5 |
+| Backend | Python 3.11, FastAPI, Uvicorn |
+| Deployment | Zoho Catalyst (AppSail + Static Hosting) |
+
+---
+
+## License
+
+MIT
