@@ -142,9 +142,19 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
 
     except Exception as e:
         import traceback
-        print(f"[PRAJNA AI] Direct Groq API error: {e}")
+        err_msg = str(e)
+        print(f"[PRAJNA AI] Direct Groq API error: {err_msg}")
         traceback.print_exc()
-        return None
+        # Return the actual error message so we know immediately what Groq says (e.g. invalid key, quota, rate limit)
+        return {
+            "answer": f"AI Engine Notice: Groq API responded with '{err_msg}'. Please verify your Groq API key validity on console.groq.com.",
+            "nodes": [],
+            "edges": [],
+            "cited_firs": [],
+            "intent": "groq_api_error",
+            "matched_entity": None,
+            "language": language,
+        }
 
 
 def process_query(
