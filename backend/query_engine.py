@@ -69,7 +69,7 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
         )
 
         payload = {
-            "model": "llama-3.3-70b-versatile",
+            "model": "llama-3.1-8b-instant",
             "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"Language: {language}\nOfficer Query: {query}"}
@@ -84,7 +84,6 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "Prajna-App/1.0",
             },
             method="POST",
         )
