@@ -36,11 +36,12 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
     """
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
+        print("[PRAJNA AI] GROQ_API_KEY environment variable is not set.")
         return None
 
     try:
         from groq import Groq
-        client = Groq(api_key=api_key)
+        client = Groq(api_key=api_key.strip())
 
         # Build context snapshot
         suspects_summary = [
@@ -100,7 +101,9 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
             "language": language,
         }
     except Exception as e:
-        print("Groq inference error:", e)
+        import traceback
+        print(f"[PRAJNA AI] Groq inference error: {e}")
+        traceback.print_exc()
         return None
 
 
