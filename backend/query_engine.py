@@ -67,31 +67,46 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
             "5. Cite specific FIR numbers (e.g. KA/BLR/2024/001) and suspect names whenever relevant to the case.\n"
         )
 
-        payload = {
-            "model": "llama-3.1-8b-instant",
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Language: {language}\nOfficer Query: {query}"}
-            ],
-            "temperature": 0.3,
-            "max_tokens": 800,
-        }
+        # Try multiple official Groq model IDs in sequence until one succeeds
+        candidate_models = [
+            os.getenv("GROQ_MODEL", "").strip(),
+            "llama3-8b-8192",
+            "llama3-70b-8192",
+            "mixtral-8x7b-32768",
+            "gemma2-9b-it",
+        ]
+        active_models = [m for m in candidate_models if m]
 
-        resp = requests.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            json=payload,
-            timeout=15,
-        )
+        resp = None
+        for model_id in active_models:
+            payload = {
+                "model": model_id,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Language: {language}\nOfficer Query: {query}"}
+                ],
+                "temperature": 0.3,
+                "max_tokens": 800,
+            }
 
-        if resp.status_code != 200:
-            err_detail = resp.text
-            print(f"[PRAJNA AI] Groq HTTP {resp.status_code}: {err_detail}")
+            resp = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json=payload,
+                timeout=15,
+            )
+
+            if resp.status_code == 200:
+                break
+            print(f"[PRAJNA AI] Model {model_id} failed with {resp.status_code}: {resp.text}")
+
+        if not resp or resp.status_code != 200:
+            err_detail = resp.text if resp else "No response"
             return {
-                "answer": f"AI Engine Notice: Groq API status {resp.status_code}: {err_detail}",
+                "answer": f"AI Engine Notice: Groq API status {resp.status_code if resp else 'Error'}: {err_detail}",
                 "nodes": [],
                 "edges": [],
                 "cited_firs": [],
