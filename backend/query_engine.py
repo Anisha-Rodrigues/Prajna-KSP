@@ -37,8 +37,7 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
         return None
 
     try:
-        import urllib.request
-        import json
+        import requests
 
         # Construct comprehensive live context of all police records
         suspects_summary = [
@@ -78,21 +77,31 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
             "max_tokens": 800,
         }
 
-        req = urllib.request.Request(
+        resp = requests.post(
             "https://api.groq.com/openai/v1/chat/completions",
-            data=json.dumps(payload).encode("utf-8"),
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
             },
-            method="POST",
+            json=payload,
+            timeout=15,
         )
 
-        with urllib.request.urlopen(req, timeout=15) as response:
-            res_body = response.read().decode("utf-8")
-            res_json = json.loads(res_body)
-            answer = res_json["choices"][0]["message"]["content"].strip()
+        if resp.status_code != 200:
+            err_detail = resp.text
+            print(f"[PRAJNA AI] Groq HTTP {resp.status_code}: {err_detail}")
+            return {
+                "answer": f"AI Engine Notice: Groq API status {resp.status_code}: {err_detail}",
+                "nodes": [],
+                "edges": [],
+                "cited_firs": [],
+                "intent": "groq_api_error",
+                "matched_entity": None,
+                "language": language,
+            }
+
+        res_json = resp.json()
+        answer = res_json["choices"][0]["message"]["content"].strip()
 
         # Extract relevant nodes from response to show on Case Canvas
         network = get_network_data()
