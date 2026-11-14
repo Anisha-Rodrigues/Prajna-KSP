@@ -39,7 +39,9 @@ export default function ChatPanel({ officerId, sessionId, onNodesReceived, onAiR
       if (voiceOutputOn) speak(data.answer, language);
       await saveMemory(officerId, text, data.answer, "logged");
     } catch (err) {
-      const errText = "Connection error — check that the backend is running on port 8000.";
+      console.error("Chat error:", err);
+      const errText =
+        "Connection error — couldn't reach the PRAJNA backend. If on free hosting (Render), it may take ~30s to wake up on the first request.";
       setMessages((prev) => [...prev, { role: "ai", text: errText }]);
       if (voiceOutputOn) speak(errText, language);
     } finally {

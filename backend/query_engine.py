@@ -13,17 +13,96 @@ The output format is designed so that a real LLM can replace this module
 later without requiring major frontend changes.
 """
 
+import json
+import os
 from copy import deepcopy
 from typing import Any, Dict, List
 
 from mock_db import (
     FIRS,
     SUSPECTS,
+    LOCATIONS,
+    EVIDENCE,
     get_network_data,
 )
 from pressure_engine import (
     get_top_pressure_zones,
 )
+
+
+def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None:
+    """
+    RAG over Crime Knowledge Graph using Groq (Llama-3-70b/8b) or fallback.
+    """
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        return None
+
+    try:
+        from groq import Groq
+        client = Groq(api_key=api_key)
+
+        # Build context snapshot
+        suspects_summary = [
+            f"- {s['name']} (ID: {s['id']}, Risk: {s['risk_level']}, Status: {s['status']}, Bail: {s['bail_status']}, Crimes: {', '.join(s['crime_types'])}, Locations: {', '.join(s['known_locations'])})"
+            for s in SUSPECTS.values()
+        ]
+        firs_summary = [
+            f"- FIR {f['fir_id']} ({f['crime_type']} at {f['location']}, status: {f['status']}, suspects: {', '.join(f['suspect_names'])})"
+            for f in FIRS.values()
+        ]
+
+        system_prompt = (
+            "You are PRAJNA AI, a specialized law enforcement intelligence analyst assistant for Karnataka State Police (KSP).\n"
+            "You have access to the current active crime intelligence records:\n"
+            "SUSPECTS:\n" + "\n".join(suspects_summary) + "\n\n"
+            "FIRS & INCIDENTS:\n" + "\n".join(firs_summary) + "\n\n"
+            "Instructions:\n"
+            "1. Answer the officer's query accurately using the above intelligence.\n"
+            "2. If queried in Kannada (or if language is kn-IN), reply in polite, professional Kannada.\n"
+            "3. Return a clean, professional, concise response.\n"
+            "4. Also identify any cited FIR IDs (e.g. KA/BLR/2024/001) or Suspect names mentioned.\n"
+            "Format your reply as valid JSON with keys:\n"
+            '{"answer": "...", "cited_firs": ["..."], "matched_suspect_ids": ["S001"]}'
+        )
+
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Language: {language}\nInvestigator Query: {query}"}
+            ],
+            model="llama-3.3-70b-versatile",
+            temperature=0.2,
+            response_format={"type": "json_object"}
+        )
+
+        content = chat_completion.choices[0].message.content
+        parsed = json.loads(content)
+
+        cited_firs = parsed.get("cited_firs", [])
+        matched_suspect_ids = parsed.get("matched_suspect_ids", [])
+
+        # Build dynamic nodes for canvas
+        network = get_network_data()
+        nodes = []
+        matched_ids = set(matched_suspect_ids + [f"FIR:{f}" for f in cited_firs])
+        for node in network["nodes"]:
+            if node["id"] in matched_ids:
+                nodes.append(node)
+
+        return {
+            "answer": parsed.get("answer", ""),
+            "nodes": nodes,
+            "edges": get_edges_for_nodes([n["id"] for n in nodes]),
+            "cited_firs": cited_firs,
+            "intent": "llm_rag_groq",
+            "matched_entity": "groq_llama3",
+            "language": language,
+        }
+    except Exception as e:
+        print("Groq inference error:", e)
+        return None
+
 
 
 def normalize_query(query: str):
@@ -594,8 +673,11 @@ def process_query(
         }
 
     # ---------------------------------------------------------------
-    # DEFAULT FALLBACK
+    # GROQ LLM / ML RAG INTEGRATION & INTELLIGENT FALLBACK
     # ---------------------------------------------------------------
+    llm_result = query_groq_llm(query, language)
+    if llm_result:
+        return llm_result
 
     return {
         "answer": (
