@@ -28,16 +28,17 @@ def get_edges_for_nodes(node_ids: List[str]):
 def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None:
     """
     RAG over Crime Knowledge Graph using Groq Llama 3.3 70B.
-    Acts like OpenAI: analyzes any question, reasons over context, and gives intelligent answers.
+    Uses direct HTTPS requests via the standard OpenAI/Groq REST API so it never
+    fails on missing SDK dependencies.
     """
-    api_key = os.getenv("GROQ_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY", "").strip()
     if not api_key:
-        print("[PRAJNA AI] GROQ_API_KEY environment variable is missing.")
+        print("[PRAJNA AI] GROQ_API_KEY is not set.")
         return None
 
     try:
-        from groq import Groq
-        client = Groq(api_key=api_key.strip())
+        import urllib.request
+        import json
 
         # Construct comprehensive live context of all police records
         suspects_summary = [
@@ -67,17 +68,31 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
             "5. Cite specific FIR numbers (e.g. KA/BLR/2024/001) and suspect names whenever relevant to the case.\n"
         )
 
-        chat_completion = client.chat.completions.create(
-            messages=[
+        payload = {
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"Language: {language}\nOfficer Query: {query}"}
             ],
-            model="llama-3.3-70b-versatile",
-            temperature=0.3,
-            max_tokens=800,
+            "temperature": 0.3,
+            "max_tokens": 800,
+        }
+
+        req = urllib.request.Request(
+            "https://api.groq.com/openai/v1/chat/completions",
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+                "User-Agent": "Prajna-App/1.0",
+            },
+            method="POST",
         )
 
-        answer = chat_completion.choices[0].message.content.strip()
+        with urllib.request.urlopen(req, timeout=15) as response:
+            res_body = response.read().decode("utf-8")
+            res_json = json.loads(res_body)
+            answer = res_json["choices"][0]["message"]["content"].strip()
 
         # Extract relevant nodes from response to show on Case Canvas
         network = get_network_data()
@@ -127,7 +142,7 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
 
     except Exception as e:
         import traceback
-        print(f"[PRAJNA AI] Groq inference failed: {e}")
+        print(f"[PRAJNA AI] Direct Groq API error: {e}")
         traceback.print_exc()
         return None
 
