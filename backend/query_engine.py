@@ -316,22 +316,55 @@ def process_query(
     language: str = "en-IN",
 ):
     """
-    Main mock AI query processor.
-
-    Supported patterns:
-
-    - Raju / Raju Kumar
-    - Whitefield
-    - network / associates
-    - theft
-    - bail
-    - pressure / hotspot
-    - default fallback
+    Main AI query processor with dynamic LLM inference, smart semantic search,
+    and fallback handling.
     """
+    # 1. First priority: Real ML / LLM Model (Groq Llama 3.3 70B)
+    llm_result = query_groq_llm(query, language)
+    if llm_result and llm_result.get("answer"):
+        return llm_result
 
-    normalized = normalize_query(
-        query
-    )
+    normalized = normalize_query(query)
+
+    # 2. Dynamic conversational greetings & common chatter
+    if any(greet in normalized for greet in ["hi", "hello", "namaskara", "namaste", "hey", "good morning", "good evening"]):
+        return {
+            "answer": "Namaskara Officer. I am PRAJNA, your AI crime intelligence assistant. You can ask me about suspects (e.g. 'Show Raju Kumar or Vikram Shetty'), locations ('Crime in Bengaluru or Whitefield'), active FIRs, suspects on bail, or current high-risk hotspots.",
+            "nodes": [],
+            "edges": [],
+            "cited_firs": [],
+            "intent": "greeting",
+            "matched_entity": "system",
+            "language": language,
+        }
+
+    # 3. Dynamic search across all locations (e.g. Bengaluru, Whitefield, Indiranagar, etc.)
+    for loc_name in ["bengaluru", "bangalore", "whitefield", "marathahalli", "indiranagar", "mysuru", "electronic city", "hubli", "koramangala", "hsr", "kalaburagi", "mangaluru"]:
+        if loc_name in normalized:
+            # Match matching FIRs
+            matching_firs = [
+                deepcopy(f) for f in FIRS.values()
+                if loc_name in f["location"].lower() or (loc_name in ["bengaluru", "bangalore"] and "bengaluru" in f["district"].lower())
+            ]
+            if matching_firs:
+                fir_ids = [f["fir_id"] for f in matching_firs]
+                fir_nodes = build_fir_nodes(matching_firs)
+                suspect_ids = []
+                for f in matching_firs:
+                    suspect_ids.extend(f.get("suspect_ids", []))
+                suspect_nodes = build_suspect_nodes(list(set(suspect_ids)))
+                all_nodes = fir_nodes + suspect_nodes
+                node_ids = [n["id"] for n in all_nodes]
+
+                return {
+                    "answer": f"Found {len(matching_firs)} incident(s) reported in the {loc_name.title()} jurisdiction. Linked offenses include {', '.join(set([f['crime_type'] for f in matching_firs]))} with primary suspects {', '.join(set([s['label'] for s in suspect_nodes])) or 'under review'}.",
+                    "nodes": all_nodes,
+                    "edges": get_edges_for_nodes(node_ids),
+                    "cited_firs": fir_ids,
+                    "intent": "location_investigation",
+                    "matched_entity": loc_name,
+                    "language": language,
+                }
 
     # ---------------------------------------------------------------
     # RAJU QUERY

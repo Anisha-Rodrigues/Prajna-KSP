@@ -37,11 +37,15 @@ export default function ChatPanel({ officerId, sessionId, onNodesReceived, onAiR
       onNodesReceived(data.nodes || [], data.edges || []);
       onAiReply?.(data.answer, data.cited_firs);
       if (voiceOutputOn) speak(data.answer, language);
-      await saveMemory(officerId, text, data.answer, "logged");
+      try {
+        await saveMemory(officerId, text, data.answer, "logged");
+      } catch (memErr) {
+        console.warn("Memory log skipped:", memErr);
+      }
     } catch (err) {
       console.error("Chat error:", err);
       const errText =
-        "Connection error — couldn't reach the PRAJNA backend. If on free hosting (Render), it may take ~30s to wake up on the first request.";
+        "Service temporarily unavailable. Please retry in a few seconds.";
       setMessages((prev) => [...prev, { role: "ai", text: errText }]);
       if (voiceOutputOn) speak(errText, language);
     } finally {
