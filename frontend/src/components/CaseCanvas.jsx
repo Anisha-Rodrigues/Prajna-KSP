@@ -12,12 +12,27 @@ export default function CaseCanvas({ nodes, edges, onNodeClick }) {
   const simulationRef = useRef(null);
 
   useEffect(() => {
+    if (!svgRef.current) return;
     const d3 = window.d3;
+    if (!d3) return;
+
     const svg = d3.select(svgRef.current);
-    const width = svgRef.current.clientWidth;
-    const height = svgRef.current.clientHeight;
+    const width = svgRef.current.clientWidth || 600;
+    const height = svgRef.current.clientHeight || 400;
 
     svg.selectAll("*").remove();
+
+    if (!nodes || nodes.length === 0) {
+      const g = svg.append("g");
+      g.append("text")
+        .attr("x", width / 2)
+        .attr("y", height / 2)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#6b7280")
+        .attr("font-size", "14px")
+        .text("Case Canvas is empty. Query suspects or locations to map relationships.");
+      return;
+    }
 
     const container = svg.append("g");
 
@@ -28,17 +43,22 @@ export default function CaseCanvas({ nodes, edges, onNodeClick }) {
     );
 
     // Deep copy so D3 mutation doesn't fight React state
-    const nodesCopy = nodes.map((n) => ({ ...n }));
-    const edgesCopy = edges.map((e) => ({ ...e }));
+    const nodesCopy = (nodes || []).map((n) => ({ ...n }));
+    const nodeIds = new Set(nodesCopy.map((n) => n.id));
+    // Filter out edges that reference missing nodes to avoid D3 crash
+    const edgesCopy = (edges || [])
+      .filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
+      .map((e) => ({ ...e }));
 
-    const simulation = d3
-      .forceSimulation(nodesCopy)
-      .force("link", d3.forceLink(edgesCopy).id((d) => d.id).distance(120))
-      .force("charge", d3.forceManyBody().strength(-300))
-      .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collide", d3.forceCollide().radius(40));
+    try {
+      const simulation = d3
+        .forceSimulation(nodesCopy)
+        .force("link", d3.forceLink(edgesCopy).id((d) => d.id).distance(120))
+        .force("charge", d3.forceManyBody().strength(-300))
+        .force("center", d3.forceCenter(width / 2, height / 2))
+        .force("collide", d3.forceCollide().radius(40));
 
-    simulationRef.current = simulation;
+      simulationRef.current = simulation;
 
     const link = container
       .append("g")
@@ -98,22 +118,25 @@ export default function CaseCanvas({ nodes, edges, onNodeClick }) {
       .attr("text-anchor", "middle")
       .attr("dy", 35);
 
-    simulation.on("tick", () => {
-      link
-        .attr("x1", (d) => d.source.x)
-        .attr("y1", (d) => d.source.y)
-        .attr("x2", (d) => d.target.x)
-        .attr("y2", (d) => d.target.y);
+      simulation.on("tick", () => {
+        link
+          .attr("x1", (d) => d.source.x)
+          .attr("y1", (d) => d.source.y)
+          .attr("x2", (d) => d.target.x)
+          .attr("y2", (d) => d.target.y);
 
-      linkLabel
-        .attr("x", (d) => (d.source.x + d.target.x) / 2)
-        .attr("y", (d) => (d.source.y + d.target.y) / 2);
+        linkLabel
+          .attr("x", (d) => (d.source.x + d.target.x) / 2)
+          .attr("y", (d) => (d.source.y + d.target.y) / 2);
 
-      node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-      label.attr("x", (d) => d.x).attr("y", (d) => d.y);
-    });
+        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+        label.attr("x", (d) => d.x).attr("y", (d) => d.y);
+      });
+    } catch (simErr) {
+      console.error("D3 simulation error:", simErr);
+    }
 
-    return () => simulation.stop();
+    return () => simulationRef.current?.stop();
   }, [nodes, edges]);
 
   return (
