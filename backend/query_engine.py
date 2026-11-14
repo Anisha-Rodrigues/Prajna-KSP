@@ -84,6 +84,7 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
             },
             method="POST",
         )
