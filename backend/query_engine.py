@@ -67,15 +67,25 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
             "5. Cite specific FIR numbers (e.g. KA/BLR/2024/001) and suspect names whenever relevant to the case.\n"
         )
 
-        # Official active Groq production models
-        active_models = ["llama3-8b-8192", "mixtral-8x7b-32768", "gemma2-9b-it"]
-        if os.getenv("GROQ_MODEL", "").strip():
-            active_models.insert(0, os.getenv("GROQ_MODEL", "").strip())
+        # Auto-detect available models dynamically directly from Groq account
+        # so decommissioned models are never requested
+        try:
+            m_list_resp = requests.get(
+                "https://api.groq.com/openai/v1/models",
+                headers={"Authorization": f"Bearer {api_key}"},
+                timeout=10,
+            )
+            if m_list_resp.status_code == 200:
+                available = [m["id"] for m in m_list_resp.json().get("data", []) if "whisper" not in m["id"]]
+            else:
+                available = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "llama3-70b-8192"]
+        except Exception:
+            available = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]
 
         resp = None
         last_error = ""
 
-        for model_id in active_models:
+        for model_id in available:
             payload = {
                 "model": model_id,
                 "messages": [
