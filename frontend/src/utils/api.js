@@ -1,4 +1,9 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api";
+// Production Render URL fallback if environment variable is not passed
+const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD
+    ? "https://prajna-backend-g1yo.onrender.com/api"
+    : "http://localhost:8000/api");
 
 async function handleResponse(res) {
   if (!res.ok) throw new Error(`API error: ${res.status}`);
