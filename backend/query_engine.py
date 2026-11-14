@@ -1,252 +1,621 @@
 """
-PRAJNA - KSP Crime Intelligence Platform
-Mock AI Query Engine (query_engine.py)
-Pattern-matches investigator natural language queries & returns structured AI analysis with Graph Nodes/Edges.
+PRAJNA — Mock AI Query Engine
+=============================
+
+A deterministic mock AI engine for the KSP Datathon prototype.
+
+The engine pattern-matches investigator queries and returns structured
+intelligence responses.
+
+It does NOT call a real LLM or external AI API.
+
+The output format is designed so that a real LLM can replace this module
+later without requiring major frontend changes.
 """
 
-from mock_db import SUSPECTS, FIRS, EVIDENCE
-from pressure_engine import get_all_zone_pressures
-from memory_weaving import save_memory_thread
+from copy import deepcopy
+from typing import Any, Dict, List
 
-def build_full_network_graph():
+from mock_db import (
+    FIRS,
+    SUSPECTS,
+    get_network_data,
+)
+from pressure_engine import (
+    get_top_pressure_zones,
+)
+
+
+def normalize_query(query: str):
     """
-    Constructs the complete Crime Intelligence Graph containing all suspects, FIRs, locations, and evidence.
+    Normalize investigator input for keyword matching.
     """
-    nodes = []
-    edges = []
-    node_set = set()
 
-    # Suspect nodes
-    for s_id, s in SUSPECTS.items():
-        nodes.append({
-            "id": s_id,
-            "label": s["name"],
-            "type": "suspect",
-            "risk": s["risk_level"],
-            "status": s["status"],
-            "color": "#ef4444",  # Red
-            "size": 24,
-            "details": s
-        })
-        node_set.add(s_id)
-
-        # Location node & edge
-        loc_id = f"LOC-{s['location'].upper().replace(' ', '_')}"
-        if loc_id not in node_set:
-            nodes.append({
-                "id": loc_id,
-                "label": s["location"],
-                "type": "location",
-                "risk": "Jurisdiction",
-                "status": "Active Surveillance",
-                "color": "#10b981",  # Green
-                "size": 18,
-                "details": {"location": s["location"], "district": s["district"]}
-            })
-            node_set.add(loc_id)
-        
-        edges.append({
-            "source": s_id,
-            "target": loc_id,
-            "label": "Operates in",
-            "weight": 2
-        })
-
-    # FIR nodes & edges
-    for f_id, f in FIRS.items():
-        nodes.append({
-            "id": f_id,
-            "label": f["fir_number"],
-            "type": "fir",
-            "risk": f["crime_type"],
-            "status": f["status"],
-            "color": "#3b82f6",  # Blue
-            "size": 20,
-            "details": f
-        })
-        node_set.add(f_id)
-
-        # Link suspects to FIR
-        for s_name in f["suspects_named"]:
-            for s_id, s in SUSPECTS.items():
-                if s["name"] == s_name:
-                    edges.append({
-                        "source": s_id,
-                        "target": f_id,
-                        "label": "Named in FIR",
-                        "weight": 3
-                    })
-
-    # Evidence nodes & edges
-    for e_id, e in EVIDENCE.items():
-        nodes.append({
-            "id": e_id,
-            "label": e["name"],
-            "type": "evidence",
-            "risk": e["type"],
-            "status": "Seized",
-            "color": "#f59e0b",  # Yellow
-            "size": 16,
-            "details": e
-        })
-        node_set.add(e_id)
-
-        if e["linked_fir"] in FIRS:
-            edges.append({
-                "source": e_id,
-                "target": e["linked_fir"],
-                "label": "Recovered for FIR",
-                "weight": 2
-            })
-
-    # Associate edges between suspects
-    edges.append({"source": "SUSP-001", "target": "SUSP-002", "label": "Co-Accused / Partner", "weight": 4})
-    edges.append({"source": "SUSP-001", "target": "SUSP-004", "label": "Hardware Syndicate", "weight": 4})
-    edges.append({"source": "SUSP-002", "target": "SUSP-003", "label": "Burglary Cell", "weight": 3})
-
-    return {"nodes": nodes, "edges": edges}
-
-def process_query(query: str, language: str = "en-IN", officer_id: str = "OFF-4092", session_id: str = "SESS-8801"):
-    """
-    Main NLP pattern-matching function for investigator queries.
-    """
-    q = query.lower().strip()
-    full_graph = build_full_network_graph()
-    
-    answer = ""
-    nodes = []
-    edges = []
-    cited_firs = []
-    outcome_tag = "Investigation Active"
-
-    # Match 1: Raju / Raju Kumar
-    if "raju" in q:
-        raju = SUSPECTS["SUSP-001"]
-        cited_firs = raju["firs"]
-        answer = (
-            f"**Subject Identification: {raju['name']} (Risk: {raju['risk_level']})**\n\n"
-            f"• **Current Status**: {raju['status']}\n"
-            f"• **Active FIRs**: {', '.join(raju['firs'])}\n"
-            f"• **Known Co-Accused**: {', '.join(raju['associates'])}\n"
-            f"• **Modus Operandi**: {raju['modus_operandi']}\n\n"
-            f"**Intelligence Summary**: Raju Kumar was recently released on bail and has strong links to ATM Skimming in Whitefield (KA/BLR/2024/005) with absconding tech expert Vikram Shetty. Immediate beat monitoring recommended in Whitefield."
-        )
-        
-        # Extract Raju & linked nodes
-        target_ids = {"SUSP-001", "SUSP-002", "SUSP-004", "LOC-WHITEFIELD", "EVI-901", "EVI-902"} | set(raju["firs"])
-        nodes = [n for n in full_graph["nodes"] if n["id"] in target_ids]
-        edges = [e for e in full_graph["edges"] if e["source"] in target_ids and e["target"] in target_ids]
-        outcome_tag = "Confirmed Link"
-
-    # Match 2: Whitefield
-    elif "whitefield" in q:
-        cited_firs = ["KA/BLR/2024/001", "KA/BLR/2024/005"]
-        answer = (
-            "**Whitefield Crime Cluster Intelligence**\n\n"
-            "• **Total Linked FIRs**: 2 (KA/BLR/2024/001 - Jewelry Theft, KA/BLR/2024/005 - ATM Skimming)\n"
-            "• **Key Suspects**: Raju Kumar (High Risk), Suresh Naik (Medium Risk), Vikram Shetty (Absconding)\n"
-            "• **Crime Pressure Score**: 76.4/100 (HIGH RISK - Alert Active)\n"
-            "• **Critical Signal**: 8 bail releases this week + 14 new unmonitored ATM kiosks installed on ITPL road.\n\n"
-            "**Recommendation**: Deploy night patrol unit #4 along ITPL road corridor."
-        )
-        target_ids = {"LOC-WHITEFIELD", "SUSP-001", "SUSP-002", "SUSP-004", "KA/BLR/2024/001", "KA/BLR/2024/005", "EVI-901"}
-        nodes = [n for n in full_graph["nodes"] if n["id"] in target_ids]
-        edges = [e for e in full_graph["edges"] if e["source"] in target_ids and e["target"] in target_ids]
-        outcome_tag = "Cluster Analysis"
-
-    # Match 3: Network / Associates
-    elif "network" in q or "associates" in q or "graph" in q or "syndicate" in q:
-        answer = (
-            "**Full Crime Intelligence Graph loaded.**\n\n"
-            "• **Network Breakdown**: 4 Suspects, 6 FIRs, 4 Jurisdictions, 4 Evidence Artifacts.\n"
-            "• **Primary Syndicate**: Raju Kumar & Vikram Shetty (ATM Skimming & Fraud) connected to Suresh Naik & Mohammed Irfan (Burglary & Fencing cell).\n"
-            "• **Absconding Node**: Vikram Shetty (Lookout circular active)."
-        )
-        nodes = full_graph["nodes"]
-        edges = full_graph["edges"]
-        cited_firs = list(FIRS.keys())
-        outcome_tag = "Network Traversal"
-
-    # Match 4: Theft
-    elif "theft" in q or "stolen" in q or "burglary" in q:
-        cited_firs = ["KA/BLR/2024/001", "KA/BLR/2024/003", "KA/BLR/2024/005"]
-        answer = (
-            "**Theft & Burglary Offense Analysis**\n\n"
-            "• **Active Theft FIRs**: KA/BLR/2024/001 (Whitefield), KA/BLR/2024/003 (Indiranagar), KA/BLR/2024/005 (Whitefield ATM Skimming).\n"
-            "• **Cumulative Property Stolen**: ₹ 43,80,000.\n"
-            "• **Common Nexus**: Suresh Naik acts as common nexus between Whitefield theft crew and Indiranagar burglary crew."
-        )
-        target_ids = {"SUSP-001", "SUSP-002", "SUSP-003", "KA/BLR/2024/001", "KA/BLR/2024/003", "KA/BLR/2024/005", "EVI-904"}
-        nodes = [n for n in full_graph["nodes"] if n["id"] in target_ids]
-        edges = [e for e in full_graph["edges"] if e["source"] in target_ids and e["target"] in target_ids]
-        outcome_tag = "Modus Operandi Match"
-
-    # Match 5: Bail
-    elif "bail" in q or "released" in q:
-        answer = (
-            "**Active Bail Monitoring List (High Recidivism Risk)**\n\n"
-            "1. **Raju Kumar** (High Risk) - Released on bail 2026-07-20 (3 days ago). Linked FIRs: 001/002/005.\n"
-            "2. **Suresh Naik** (Medium Risk) - Released on bail 2026-07-15. Linked FIRs: 001/003.\n"
-            "3. **Mohammed Irfan** (Medium Risk) - Released on bail 2026-06-10. Linked FIRs: 003/MYS001.\n\n"
-            "**Crime Pressure Impact**: Recent bail releases account for 40% of current pressure spike in Bengaluru East."
-        )
-        cited_firs = ["KA/BLR/2024/001", "KA/BLR/2024/002", "KA/BLR/2024/003", "KA/BLR/2024/005"]
-        target_ids = {"SUSP-001", "SUSP-002", "SUSP-003", "KA/BLR/2024/001", "KA/BLR/2024/003"}
-        nodes = [n for n in full_graph["nodes"] if n["id"] in target_ids]
-        edges = [e for e in full_graph["edges"] if e["source"] in target_ids and e["target"] in target_ids]
-        outcome_tag = "Bail Monitoring"
-
-    # Match 6: Pressure / Hotspot
-    elif "pressure" in q or "hotspot" in q or "risk" in q or "predict" in q:
-        pressures = sorted(get_all_zone_pressures(), key=lambda x: x["score"], reverse=True)[:3]
-        hotspot_str = "\n".join([f"{idx+1}. **{p['zone_name']}** — Score: **{p['score']}/100** ({p['level']} Risk)\n   • Reason: {p['explanation']}" for idx, p in enumerate(pressures)])
-        
-        answer = (
-            f"**Top 3 High Crime Pressure Zones (Karnataka)**\n\n"
-            f"{hotspot_str}\n\n"
-            f"**Predictive Alert**: Bengaluru East requires immediate patrol reinforcement before upcoming festival weekend."
-        )
-        cited_firs = ["KA/BLR/2024/001", "KA/BLR/2024/005"]
-        target_ids = {"LOC-WHITEFIELD", "SUSP-001", "KA/BLR/2024/005"}
-        nodes = [n for n in full_graph["nodes"] if n["id"] in target_ids]
-        edges = [e for e in full_graph["edges"] if e["source"] in target_ids and e["target"] in target_ids]
-        outcome_tag = "Pressure Hotspot"
-
-    # Fallback default
-    else:
-        answer = (
-            f"**Query Received**: '{query}'\n\n"
-            f"No exact match found in recent active case files. Suggestions to try:\n"
-            f"• Ask about suspects: *'Show Raju Kumar network'*\n"
-            f"• Ask about locations: *'Crime pressure in Whitefield'*\n"
-            f"• Ask about offenses: *'Show recent theft FIRs'*\n"
-            f"• Ask about risk vectors: *'Which suspects are currently on bail?'*\n"
-            f"• Ask about predictions: *'Top crime pressure hotspots'*."
-        )
-        # Return default subset of graph
-        target_ids = {"SUSP-001", "SUSP-002", "KA/BLR/2024/001"}
-        nodes = [n for n in full_graph["nodes"] if n["id"] in target_ids]
-        edges = [e for e in full_graph["edges"] if e["source"] in target_ids and e["target"] in target_ids]
-        cited_firs = ["KA/BLR/2024/001"]
-        outcome_tag = "General Query"
-
-    # Save to memory thread
-    memory_thread = save_memory_thread(
-        officer_id=officer_id,
-        query=query,
-        response=answer,
-        cited_firs=cited_firs,
-        nodes_involved=[n["id"] for n in nodes],
-        outcome_tag=outcome_tag,
-        session_id=session_id
+    return (
+        query
+        .strip()
+        .lower()
     )
 
+
+def build_suspect_nodes(
+    suspect_ids: List[str],
+):
+    """
+    Return graph nodes for selected suspects.
+    """
+
+    network = get_network_data()
+
+    selected_ids = set(
+        suspect_ids
+    )
+
+    return [
+        deepcopy(node)
+        for node in network["nodes"]
+        if (
+            node["id"]
+            in selected_ids
+        )
+    ]
+
+
+def build_related_network(
+    suspect_ids: List[str],
+):
+    """
+    Return selected suspect nodes and their directly connected nodes/edges.
+    """
+
+    network = get_network_data()
+
+    selected_ids = set(
+        suspect_ids
+    )
+
+    related_edges = []
+
+    related_node_ids = set(
+        selected_ids
+    )
+
+    for edge in network["edges"]:
+
+        source = edge["source"]
+        target = edge["target"]
+
+        if (
+            source in selected_ids
+            or target in selected_ids
+        ):
+
+            related_edges.append(
+                deepcopy(edge)
+            )
+
+            related_node_ids.add(
+                source
+            )
+
+            related_node_ids.add(
+                target
+            )
+
+    related_nodes = [
+        deepcopy(node)
+        for node in network["nodes"]
+        if node["id"]
+        in related_node_ids
+    ]
+
+    return (
+        related_nodes,
+        related_edges,
+    )
+
+
+def find_firs_by_location(
+    location: str,
+):
+    """
+    Find FIRs associated with a location.
+    """
+
+    return [
+        deepcopy(fir)
+        for fir in FIRS.values()
+        if fir["location"].lower()
+        == location.lower()
+    ]
+
+
+def find_firs_by_crime_type(
+    crime_type: str,
+):
+    """
+    Find FIRs containing a crime type.
+    """
+
+    results = []
+
+    for fir in FIRS.values():
+
+        crime_types = [
+            crime.lower()
+            for crime in fir.get(
+                "crime_types",
+                [],
+            )
+        ]
+
+        if (
+            crime_type.lower()
+            in crime_types
+        ):
+            results.append(
+                deepcopy(fir)
+            )
+
+    return results
+
+
+def make_fir_nodes(
+    firs: List[Dict[str, Any]],
+):
+    """
+    Convert FIR records into graph nodes.
+    """
+
+    network = get_network_data()
+
+    fir_ids = {
+        f"FIR:{fir['fir_id']}"
+        for fir in firs
+    }
+
+    return [
+        deepcopy(node)
+        for node in network["nodes"]
+        if node["id"]
+        in fir_ids
+    ]
+
+
+def make_location_nodes(
+    firs: List[Dict[str, Any]],
+):
+    """
+    Convert FIR locations into graph nodes.
+    """
+
+    network = get_network_data()
+
+    locations = {
+        fir["location"].lower()
+        for fir in firs
+    }
+
+    return [
+        deepcopy(node)
+        for node in network["nodes"]
+        if (
+            node["type"] == "location"
+            and node["label"].lower()
+            in locations
+        )
+    ]
+
+
+def get_edges_for_nodes(
+    node_ids,
+):
+    """
+    Return edges connected to selected nodes.
+    """
+
+    network = get_network_data()
+
+    node_ids = set(
+        node_ids
+    )
+
+    return [
+        deepcopy(edge)
+        for edge in network["edges"]
+        if (
+            edge["source"]
+            in node_ids
+            or edge["target"]
+            in node_ids
+        )
+    ]
+
+
+def process_query(
+    query: str,
+    language: str = "en-IN",
+):
+    """
+    Main mock AI query processor.
+
+    Supported patterns:
+
+    - Raju / Raju Kumar
+    - Whitefield
+    - network / associates
+    - theft
+    - bail
+    - pressure / hotspot
+    - default fallback
+    """
+
+    normalized = normalize_query(
+        query
+    )
+
+    # ---------------------------------------------------------------
+    # RAJU QUERY
+    # ---------------------------------------------------------------
+
+    if (
+        "raju" in normalized
+        or "raju kumar" in normalized
+    ):
+
+        suspect = SUSPECTS["S001"]
+
+        suspect_ids = [
+            "S001",
+            "S002",
+            "S004",
+        ]
+
+        nodes, edges = build_related_network(
+            suspect_ids
+        )
+
+        return {
+            "answer": (
+                "Raju Kumar is classified as a high-risk active suspect "
+                "linked to three FIRs: KA/BLR/2024/001, "
+                "KA/BLR/2024/002, and KA/BLR/2024/005. "
+                "The network indicates direct associations with Suresh Naik "
+                "and Vikram Shetty. Raju is currently marked as on bail and "
+                "has known activity connected to Whitefield and Marathahalli."
+            ),
+            "nodes": nodes,
+            "edges": edges,
+            "cited_firs": deepcopy(
+                suspect["linked_firs"]
+            ),
+            "intent": "suspect_profile",
+            "matched_entity": "S001",
+            "language": language,
+        }
+
+    # ---------------------------------------------------------------
+    # WHITEFIELD QUERY
+    # ---------------------------------------------------------------
+
+    if "whitefield" in normalized:
+
+        firs = find_firs_by_location(
+            "Whitefield"
+        )
+
+        fir_nodes = make_fir_nodes(
+            firs
+        )
+
+        location_nodes = make_location_nodes(
+            firs
+        )
+
+        node_ids = [
+            node["id"]
+            for node in fir_nodes
+        ] + [
+            node["id"]
+            for node in location_nodes
+        ]
+
+        edges = get_edges_for_nodes(
+            node_ids
+        )
+
+        # Add suspects linked to these FIRs.
+        suspect_ids = set()
+
+        for fir in firs:
+            suspect_ids.update(
+                fir["suspect_ids"]
+            )
+
+        suspect_nodes = build_suspect_nodes(
+            list(
+                suspect_ids
+            )
+        )
+
+        nodes = (
+            suspect_nodes
+            + fir_nodes
+            + location_nodes
+        )
+
+        answer = (
+            "Whitefield is associated with "
+            f"{len(firs)} FIRs in the current intelligence dataset: "
+            + ", ".join(
+                fir["fir_id"]
+                for fir in firs
+            )
+            + ". The cases include theft and ATM skimming activity. "
+            "The linked suspects are Raju Kumar, Suresh Naik, and "
+            "Vikram Shetty."
+        )
+
+        return {
+            "answer": answer,
+            "nodes": nodes,
+            "edges": edges,
+            "cited_firs": [
+                fir["fir_id"]
+                for fir in firs
+            ],
+            "intent": "location_search",
+            "matched_entity": "Whitefield",
+            "language": language,
+        }
+
+    # ---------------------------------------------------------------
+    # NETWORK / ASSOCIATES QUERY
+    # ---------------------------------------------------------------
+
+    if (
+        "network" in normalized
+        or "associate" in normalized
+        or "associates" in normalized
+    ):
+
+        network = get_network_data()
+
+        suspect_nodes = [
+            node
+            for node in network["nodes"]
+            if node["type"] == "suspect"
+        ]
+
+        suspect_names = [
+            node["label"]
+            for node in suspect_nodes
+        ]
+
+        return {
+            "answer": (
+                "The current criminal intelligence network contains "
+                f"{len(suspect_nodes)} primary suspect nodes. "
+                "The strongest direct suspect relationships are between "
+                "Raju Kumar and Suresh Naik, Raju Kumar and Vikram Shetty, "
+                "and Suresh Naik and Mohammed Irfan. "
+                "The network also links suspects to FIRs, locations, "
+                "and evidence records."
+            ),
+            "nodes": deepcopy(
+                network["nodes"]
+            ),
+            "edges": deepcopy(
+                network["edges"]
+            ),
+            "cited_firs": list(
+                FIRS.keys()
+            ),
+            "intent": "network_analysis",
+            "matched_entity": "criminal_network",
+            "language": language,
+        }
+
+    # ---------------------------------------------------------------
+    # THEFT QUERY
+    # ---------------------------------------------------------------
+
+    if "theft" in normalized:
+
+        firs = find_firs_by_crime_type(
+            "theft"
+        )
+
+        suspect_ids = set()
+
+        for fir in firs:
+            suspect_ids.update(
+                fir["suspect_ids"]
+            )
+
+        suspect_nodes = build_suspect_nodes(
+            list(
+                suspect_ids
+            )
+        )
+
+        fir_nodes = make_fir_nodes(
+            firs
+        )
+
+        nodes = (
+            suspect_nodes
+            + fir_nodes
+        )
+
+        node_ids = [
+            node["id"]
+            for node in nodes
+        ]
+
+        edges = get_edges_for_nodes(
+            node_ids
+        )
+
+        return {
+            "answer": (
+                "The intelligence dataset contains "
+                f"{len(firs)} theft-related FIR records. "
+                "These are "
+                + ", ".join(
+                    fir["fir_id"]
+                    for fir in firs
+                )
+                + ". The linked suspects include "
+                + ", ".join(
+                    sorted(
+                        {
+                            name
+                            for fir in firs
+                            for name in fir["suspect_names"]
+                        }
+                    )
+                )
+                + "."
+            ),
+            "nodes": nodes,
+            "edges": edges,
+            "cited_firs": [
+                fir["fir_id"]
+                for fir in firs
+            ],
+            "intent": "crime_type_search",
+            "matched_entity": "theft",
+            "language": language,
+        }
+
+    # ---------------------------------------------------------------
+    # BAIL QUERY
+    # ---------------------------------------------------------------
+
+    if "bail" in normalized:
+
+        bail_suspects = [
+            suspect
+            for suspect in SUSPECTS.values()
+            if suspect["bail_status"]
+            == "on_bail"
+        ]
+
+        suspect_ids = [
+            suspect["id"]
+            for suspect in bail_suspects
+        ]
+
+        nodes = build_suspect_nodes(
+            suspect_ids
+        )
+
+        edges = get_edges_for_nodes(
+            suspect_ids
+        )
+
+        cited_firs = []
+
+        for suspect in bail_suspects:
+            cited_firs.extend(
+                suspect["linked_firs"]
+            )
+
+        return {
+            "answer": (
+                "Two suspects in the current mock intelligence dataset "
+                "are marked as currently on bail: Raju Kumar and "
+                "Mohammed Irfan. Raju Kumar is linked to three FIRs, "
+                "while Mohammed Irfan is linked to two FIRs."
+            ),
+            "nodes": nodes,
+            "edges": edges,
+            "cited_firs": sorted(
+                set(
+                    cited_firs
+                )
+            ),
+            "intent": "bail_analysis",
+            "matched_entity": "on_bail",
+            "language": language,
+        }
+
+    # ---------------------------------------------------------------
+    # PRESSURE / HOTSPOT QUERY
+    # ---------------------------------------------------------------
+
+    if (
+        "pressure" in normalized
+        or "hotspot" in normalized
+    ):
+
+        top_zones = get_top_pressure_zones(
+            3
+        )
+
+        zone_names = [
+            zone["zone_name"]
+            for zone in top_zones
+        ]
+
+        nodes = []
+
+        for zone in top_zones:
+            nodes.append({
+                "id": zone["zone_id"],
+                "label": zone["zone_name"],
+                "type": "location",
+                "data": deepcopy(
+                    zone
+                ),
+            })
+
+        return {
+            "answer": (
+                "The current predictive crime pressure analysis identifies "
+                "the following top zones: "
+                + ", ".join(
+                    zone_names
+                )
+                + ". "
+                "The ranking combines bail-release activity, public events, "
+                "economic stress, and infrastructure growth. "
+                "These areas should be considered for preventive patrol "
+                "prioritization and additional field intelligence."
+            ),
+            "nodes": nodes,
+            "edges": [],
+            "cited_firs": [],
+            "pressure_zones": top_zones,
+            "intent": "pressure_analysis",
+            "matched_entity": "crime_pressure",
+            "language": language,
+        }
+
+    # ---------------------------------------------------------------
+    # DEFAULT FALLBACK
+    # ---------------------------------------------------------------
+
     return {
-        "answer": answer,
-        "nodes": nodes,
-        "edges": edges,
-        "cited_firs": cited_firs,
-        "memory_thread_id": memory_thread["thread_id"],
-        "timestamp": memory_thread["timestamp"],
-        "language": language
+        "answer": (
+            "I could not find a direct match for that query in the current "
+            "PRAJNA intelligence dataset. Try asking about Raju Kumar, "
+            "Whitefield, the criminal network, associates, theft cases, "
+            "suspects on bail, or crime pressure hotspots."
+        ),
+        "nodes": [],
+        "edges": [],
+        "cited_firs": [],
+        "intent": "no_match",
+        "matched_entity": None,
+        "suggested_queries": [
+            "Show me Raju Kumar's profile",
+            "What FIRs are linked to Whitefield?",
+            "Show the criminal network",
+            "Which suspects are currently on bail?",
+            "What are the top crime pressure hotspots?",
+            "Show all theft cases",
+        ],
+        "language": language,
     }
