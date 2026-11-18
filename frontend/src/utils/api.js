@@ -72,3 +72,15 @@ export async function getAlerts() {
   const res = await fetch(`${BASE_URL}/alerts`);
   return handleResponse(res);
 }
+
+export async function verifyBiometric(mode, imageBase64) {
+  const res = await fetch(`${BASE_URL}/biometric/verify`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      mode,
+      image_base64: imageBase64,
+    }),
+  });
+  return handleResponse(res);
+}

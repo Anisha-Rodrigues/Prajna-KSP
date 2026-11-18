@@ -416,8 +416,8 @@ FIRS = {
         "location": "Koramangala",
         "date": "2024-09-18",
         "status": "under_investigation",
-        "suspect_ids": ["S006"],
-        "suspect_names": ["Srinivas Rao"],
+        "suspect_ids": ["S006", "S009"],
+        "suspect_names": ["Srinivas Rao", "Anisha Rodrigues"],
         "evidence_ids": ["E012", "E013"],
         "description": (
             "Online fraud case filed by multiple victims in Koramangala. "
