@@ -157,19 +157,41 @@ export default function PressureMap() {
       const color = LEVEL_COLORS[level];
       const isAlert = alertZoneIds.has(zone.zone_id);
 
+      // 1. Draw large visible circular risk polygon fill over district/zone
+      // Radius scaled up to 14,000 meters (~14km) so it is vividly visible statewide
+      const circleRadius = level === "high" ? 18000 : level === "medium" ? 14000 : 10000;
+      const riskCircle = L.circle([zone.latitude, zone.longitude], {
+        color: color,
+        fillColor: color,
+        fillOpacity: level === "high" ? 0.35 : 0.25,
+        weight: level === "high" ? 3 : 2,
+        dashArray: level === "high" ? "6, 4" : null,
+      }).addTo(map);
+
+      riskCircle.on("click", () => setSelectedZone(zone));
+      markersRef.current.push(riskCircle);
+
+      // 2. High-contrast center marker
       const icon = L.divIcon({
         className: "prajna-hex-icon-wrapper",
         html: hexIconHtml(color, isAlert),
-        iconSize: [34, 34],
-        iconAnchor: [17, 17],
+        iconSize: [38, 38],
+        iconAnchor: [19, 19],
       });
 
       const marker = L.marker([zone.latitude, zone.longitude], { icon }).addTo(map);
       marker.on("click", () => setSelectedZone(zone));
-      marker.bindTooltip(`${zone.district} · ${Math.round(zone.pressure_score)}`, {
-        direction: "top",
-        offset: [0, -14],
-      });
+      marker.bindTooltip(
+        `<div style="font-weight:bold; font-size:12px; color:#fff; background:#0f172a; padding:3px 6px; border-radius:4px; border:1px solid ${color}">
+          ${zone.district} · Risk ${Math.round(zone.pressure_score)}
+        </div>`,
+        {
+          direction: "top",
+          offset: [0, -18],
+          permanent: false,
+          opacity: 1,
+        }
+      );
 
       markersRef.current.push(marker);
     });

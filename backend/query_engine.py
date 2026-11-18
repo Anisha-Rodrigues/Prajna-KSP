@@ -133,12 +133,30 @@ def query_groq_llm(query: str, language: str = "en-IN") -> Dict[str, Any] | None
         matched_nodes = []
         cited_firs = []
 
-        # Find any mentioned FIRs
+        # Find any mentioned FIRs and auto-include their linked evidence
         for fir_id in FIRS.keys():
-            if fir_id.lower() in answer.lower() or fir_id.lower() in query.lower():
+            if fir_id.lower() in answer.lower() or fir_id.lower() in query.lower() or (fir_id.split("/")[-1] in query):
                 cited_firs.append(fir_id)
                 for n in network["nodes"]:
                     if n["id"] == f"FIR:{fir_id}":
+                        matched_nodes.append(n)
+                # Auto-pull linked evidence for this FIR so CCTV/fingerprints appear on canvas
+                fir_data = FIRS.get(fir_id, {})
+                for evid_id in fir_data.get("evidence_ids", []):
+                    for n in network["nodes"]:
+                        if n["id"] == evid_id:
+                            matched_nodes.append(n)
+
+        # If user explicitly asked for evidence or CCTV, pull all relevant evidence nodes
+        if any(w in query.lower() for w in ["cctv", "footage", "evidence", "fingerprint", "vehicle", "photo", "image", "proof"]):
+            for n in network["nodes"]:
+                if n["type"] == "evidence":
+                    # Check if evidence matches cited FIRs or query
+                    evid_data = n.get("data", {})
+                    linked = evid_data.get("linked_firs", [])
+                    if any(f in cited_firs for f in linked) or any(f.split("/")[-1] in query for f in linked):
+                        matched_nodes.append(n)
+                    elif not cited_firs: # If no specific FIR cited, attach matching evidence
                         matched_nodes.append(n)
 
         # Find any mentioned suspects
