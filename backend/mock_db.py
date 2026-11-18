@@ -160,6 +160,67 @@ SUSPECTS = {
             "Facial recognition feature vector stored in KSP biometric repository."
         ),
     },
+    "S010": {
+        "id": "S010",
+        "name": "Virat Kohli",
+        "aliases": ["VK", "King Kohli"],
+        "risk_level": "high",
+        "status": "absconding",
+        "bail_status": "not_on_bail",
+        "bail_release_date": None,
+        "district": "Bengaluru Urban",
+        "photo_url": "/evidence/virat_photo.svg",
+        "known_associates": ["S011"],
+        "linked_firs": ["KA/BLR/2024/008", "KA/BLR/2024/009"],
+        "crime_types": ["financial fraud", "hawala transactions"],
+        "known_locations": ["Chinnaswamy Stadium Area", "MG Road", "Delhi"],
+        "nfn": "29-KA-2024-18001818",
+        "description": (
+            "High-risk absconding suspect flagged for financial fraud and hawala "
+            "transactions across Mumbai and Bengaluru. Identified via CCTV near "
+            "Chinnaswamy Stadium. Currently evading arrest."
+        ),
+    },
+    "S011": {
+        "id": "S011",
+        "name": "Rohit Sharma",
+        "aliases": ["Hitman", "Ro"],
+        "risk_level": "high",
+        "status": "active",
+        "bail_status": "on_bail",
+        "bail_release_date": "2024-12-15",
+        "district": "Mumbai (Inter-state Warrant)",
+        "photo_url": "/evidence/rohit_photo.svg",
+        "known_associates": ["S010"],
+        "linked_firs": ["KA/BLR/2024/008"],
+        "crime_types": ["money laundering", "organized crime"],
+        "known_locations": ["Mumbai", "Bengaluru"],
+        "nfn": "29-KA-2024-45004500",
+        "description": (
+            "Active suspect released on bail, linked to inter-state money laundering "
+            "ring. Associated with S010 (Virat Kohli). Monitored by ED and KSP joint task force."
+        ),
+    },
+    "S012": {
+        "id": "S012",
+        "name": "Mahendra Singh Dhoni",
+        "aliases": ["MSD", "Thala", "Captain Cool"],
+        "risk_level": "medium",
+        "status": "active",
+        "bail_status": "under_investigation",
+        "bail_release_date": None,
+        "district": "Chennai / Ranchi (Inter-state)",
+        "photo_url": "/evidence/dhoni_photo.svg",
+        "known_associates": [],
+        "linked_firs": ["KA/BLR/2024/010"],
+        "crime_types": ["land acquisition fraud", "benami property"],
+        "known_locations": ["Ranchi", "Chennai", "Bengaluru Tech Park"],
+        "nfn": "29-KA-2024-70001975",
+        "description": (
+            "Under investigation for benami property transactions and land acquisition "
+            "fraud in Bengaluru tech corridor. Cooperating with investigation."
+        ),
+    },
     "S005": {
         "id": "S005",
         "name": "Deepa Hegde",
@@ -481,6 +542,63 @@ FIRS = {
             "Ayesha Khan linked through handwriting analysis and digital records."
         ),
     },
+    "KA/BLR/2024/008": {
+        "fir_id": "KA/BLR/2024/008",
+        "short_id": "008",
+        "district": "Bengaluru Urban",
+        "police_station": "Cubbon Park Police Station",
+        "year": 2024,
+        "crime_type": "financial fraud",
+        "crime_types": ["financial fraud", "hawala transactions"],
+        "location": "MG Road",
+        "date": "2024-11-01",
+        "status": "under_investigation",
+        "suspect_ids": ["S010", "S011"],
+        "suspect_names": ["Virat Kohli", "Rohit Sharma"],
+        "evidence_ids": [],
+        "description": (
+            "Financial fraud and hawala transaction case linking inter-state suspects "
+            "identified through digital payment trails on MG Road corridor."
+        ),
+    },
+    "KA/BLR/2024/009": {
+        "fir_id": "KA/BLR/2024/009",
+        "short_id": "009",
+        "district": "Bengaluru Urban",
+        "police_station": "Chinnaswamy Stadium Area PS",
+        "year": 2024,
+        "crime_type": "financial fraud",
+        "crime_types": ["financial fraud"],
+        "location": "Chinnaswamy Stadium Area",
+        "date": "2024-11-10",
+        "status": "absconding",
+        "suspect_ids": ["S010"],
+        "suspect_names": ["Virat Kohli"],
+        "evidence_ids": [],
+        "description": (
+            "Suspect Virat Kohli absconding after CCTV identification near "
+            "Chinnaswamy Stadium area. Blue Corner Notice issued."
+        ),
+    },
+    "KA/BLR/2024/010": {
+        "fir_id": "KA/BLR/2024/010",
+        "short_id": "010",
+        "district": "Bengaluru Urban",
+        "police_station": "Sarjapur Road Police Station",
+        "year": 2024,
+        "crime_type": "land acquisition fraud",
+        "crime_types": ["land acquisition fraud", "benami property"],
+        "location": "Bengaluru Tech Corridor",
+        "date": "2024-10-20",
+        "status": "under_investigation",
+        "suspect_ids": ["S012"],
+        "suspect_names": ["Mahendra Singh Dhoni"],
+        "evidence_ids": [],
+        "description": (
+            "Benami property registration and land acquisition fraud case in "
+            "Bengaluru tech corridor. Suspect cooperating under Section 50 PMLA."
+        ),
+    },
 }
 
 
@@ -624,26 +742,38 @@ EVIDENCE = {
     },
     "E006": {
         "id": "E006",
-        "type": "witness",
+        "type": "witness statement",
         "description": (
-            "Witness statement recorded in Mysuru assault investigation"
+            "Witness statement recorded in Mysuru assault investigation. "
+            "Eyewitness identified suspect fleeing scene on KSRTC bus route."
         ),
+        "image_url": "/evidence/forensic_sample.svg",
+        "timestamp": "2024-06-18 14:30:00 IST",
+        "source": "Mysuru City Police Station, Witness Division",
         "linked_firs": ["KA/MYS/2024/001"],
     },
     "E007": {
         "id": "E007",
-        "type": "digital",
+        "type": "digital records",
         "description": (
-            "Digital transaction records related to suspected fraud"
+            "Digital transaction records showing fraudulent UPI transfers totalling ₹24.6 lakh "
+            "linked to suspect's burner phone number."
         ),
+        "image_url": "/evidence/atm_log_sample.svg",
+        "timestamp": "2024-07-05 09:15:00 IST",
+        "source": "Bengaluru Cyber Crime Cell — Financial Intelligence Unit",
         "linked_firs": ["KA/BLR/2024/004"],
     },
     "E008": {
         "id": "E008",
-        "type": "document",
+        "type": "forged document",
         "description": (
-            "Financial documents collected during fraud investigation"
+            "Forged rent agreement and fabricated Aadhaar-linked KYC documents used "
+            "to open shell company accounts in Electronic City."
         ),
+        "image_url": "/evidence/forensic_sample.svg",
+        "timestamp": "2024-07-10 11:00:00 IST",
+        "source": "Electronic City Sub-Registrar Office / SFIO",
         "linked_firs": ["KA/BLR/2024/004"],
     },
     "E009": {
@@ -667,37 +797,55 @@ EVIDENCE = {
     "E011": {
         "id": "E011",
         "type": "CCTV",
-        "description": "CCTV footage from Hubli Old Town market identifying suspect",
+        "description": "CCTV footage from Hubli Old Town market area capturing suspect during chain snatching. Partial face identification via Karnataka Smart City CCTV Grid.",
+        "image_url": "/evidence/cctv_sample.svg",
+        "timestamp": "2024-09-03 11:14:22 IST",
+        "source": "Hubli Old Town Market CCTV Grid",
         "linked_firs": ["KA/HBL/2024/001"],
     },
     "E012": {
         "id": "E012",
-        "type": "digital",
-        "description": "Payment gateway logs showing fraudulent transactions",
+        "type": "digital records",
+        "description": "Payment gateway logs from Razorpay and PhonePe showing 47 fraudulent micro-transactions. IP traced to co-working space in Koramangala.",
+        "image_url": "/evidence/atm_log_sample.svg",
+        "timestamp": "2024-09-18 16:45:00 IST",
+        "source": "Bengaluru Cyber Crime PS — IFSO Unit",
         "linked_firs": ["KA/BLR/2024/006"],
     },
     "E013": {
         "id": "E013",
-        "type": "digital",
-        "description": "IP address records from fraud server traced to suspect",
+        "type": "digital records",
+        "description": "IP address records and VPN exit node traces linking fraud command-and-control server to suspect's registered device IMEI.",
+        "image_url": "/evidence/atm_log_sample.svg",
+        "timestamp": "2024-09-19 09:00:00 IST",
+        "source": "Karnataka CERT-In / Cyber Forensics Division",
         "linked_firs": ["KA/BLR/2024/006"],
     },
     "E014": {
         "id": "E014",
-        "type": "document",
-        "description": "Forged KYC documents used for SIM card cloning",
+        "type": "forged document",
+        "description": "Forged KYC documents with fabricated Aadhaar and PAN used for SIM card cloning at three telecom outlets in HSR Layout.",
+        "image_url": "/evidence/forensic_sample.svg",
+        "timestamp": "2024-10-05 14:30:00 IST",
+        "source": "HSR Layout PS — Document Forensic Lab",
         "linked_firs": ["KA/BLR/2024/007"],
     },
     "E015": {
         "id": "E015",
-        "type": "witness",
-        "description": "Victim statement and two independent witness statements",
+        "type": "witness statement",
+        "description": "Victim statement and two independent witness affidavits identifying suspect by name. CCTV corroborates presence at market at time of assault.",
+        "image_url": "/evidence/forensic_sample.svg",
+        "timestamp": "2024-10-14 18:00:00 IST",
+        "source": "Kalaburagi City PS — Victim Support Unit",
         "linked_firs": ["KA/KLB/2024/001"],
     },
     "E016": {
         "id": "E016",
-        "type": "document",
-        "description": "Handwriting analysis report and forged shipping manifests",
+        "type": "forged document",
+        "description": "Handwriting analysis report confirming forged shipping manifests. QR-code tampering identified on 11 container clearance documents.",
+        "image_url": "/evidence/forensic_sample.svg",
+        "timestamp": "2024-11-01 12:00:00 IST",
+        "source": "Mangaluru Port Customs Forensic Cell",
         "linked_firs": ["KA/MGR/2024/001"],
     },
 }

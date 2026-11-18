@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="bg3" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#880e4f"/>
+      <stop offset="100%" stop-color="#4a0520"/>
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#bg3)"/>
+  <!-- Jersey - CSK Yellow -->
+  <ellipse cx="100" cy="150" rx="65" ry="55" fill="#f9a825"/>
+  <rect x="45" y="120" width="110" height="80" rx="4" fill="#f9a825"/>
+  <!-- Neck -->
+  <ellipse cx="100" cy="108" rx="22" ry="19" fill="#c07840"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="78" rx="41" ry="41" fill="#c07840"/>
+  <!-- Long flowing hair - Dhoni signature look (or now short) - medium-->
+  <ellipse cx="100" cy="46" rx="41" ry="14" fill="#1a0a00"/>
+  <rect x="59" y="44" width="82" height="14" rx="2" fill="#1a0a00"/>
+  <!-- Eyes -->
+  <ellipse cx="84" cy="78" rx="6" ry="6" fill="white"/>
+  <ellipse cx="116" cy="78" rx="6" ry="6" fill="white"/>
+  <ellipse cx="85" cy="79" rx="3.5" ry="3.5" fill="#1a1a1a"/>
+  <ellipse cx="117" cy="79" rx="3.5" ry="3.5" fill="#1a1a1a"/>
+  <!-- Prominent eyebrows -->
+  <path d="M76 66 Q84 61 93 66" stroke="#1a0a00" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <path d="M107 66 Q116 61 124 66" stroke="#1a0a00" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- Nose -->
+  <path d="M100 83 Q96 92 101 95 Q104 94 100 83" fill="#a06030"/>
+  <!-- Smile / calm expression -->
+  <path d="M88 100 Q100 108 112 100" stroke="#7a4020" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Jersey Number -->
+  <text x="100" y="165" text-anchor="middle" fill="#1a237e" font-family="Arial" font-size="18" font-weight="bold">7</text>
+  <text x="100" y="148" text-anchor="middle" fill="#1a237e" font-family="Arial" font-size="10" font-weight="bold">CSK</text>
+  <rect x="20" y="178" width="160" height="18" rx="4" fill="#f9a825"/>
+  <text x="100" y="191" text-anchor="middle" fill="#1a237e" font-family="Arial" font-size="10" font-weight="bold">MS DHONI #7</text>
+</svg>

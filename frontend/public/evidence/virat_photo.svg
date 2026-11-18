@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1a237e"/>
+      <stop offset="100%" stop-color="#0d1b4b"/>
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#bg)"/>
+  <!-- Jersey -->
+  <ellipse cx="100" cy="150" rx="65" ry="55" fill="#1565c0"/>
+  <rect x="45" y="120" width="110" height="80" rx="4" fill="#1565c0"/>
+  <!-- Neck -->
+  <ellipse cx="100" cy="108" rx="22" ry="20" fill="#c68642"/>
+  <!-- Head -->
+  <ellipse cx="100" cy="78" rx="40" ry="42" fill="#c68642"/>
+  <!-- Hair -->
+  <ellipse cx="100" cy="42" rx="40" ry="18" fill="#1a1a1a"/>
+  <rect x="60" y="40" width="80" height="15" rx="2" fill="#1a1a1a"/>
+  <!-- Eyes -->
+  <ellipse cx="85" cy="78" rx="6" ry="6" fill="white"/>
+  <ellipse cx="115" cy="78" rx="6" ry="6" fill="white"/>
+  <ellipse cx="86" cy="79" rx="3.5" ry="3.5" fill="#1a1a1a"/>
+  <ellipse cx="116" cy="79" rx="3.5" ry="3.5" fill="#1a1a1a"/>
+  <!-- Eyebrows -->
+  <path d="M78 68 Q85 63 93 67" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M107 67 Q115 63 122 68" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- Nose -->
+  <path d="M100 82 Q96 92 101 95 Q104 95 100 82" fill="#b06535"/>
+  <!-- Mouth / Smile -->
+  <path d="M88 100 Q100 110 112 100" stroke="#8b4513" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Jersey Number -->
+  <text x="100" y="165" text-anchor="middle" fill="white" font-family="Arial" font-size="18" font-weight="bold">18</text>
+  <!-- INDIA text -->
+  <text x="100" y="148" text-anchor="middle" fill="#FFD700" font-family="Arial" font-size="10" font-weight="bold">INDIA</text>
+  <!-- Name label -->
+  <rect x="20" y="178" width="160" height="18" rx="4" fill="#FFD700"/>
+  <text x="100" y="191" text-anchor="middle" fill="#1a237e" font-family="Arial" font-size="10" font-weight="bold">VIRAT KOHLI #18</text>
+</svg>

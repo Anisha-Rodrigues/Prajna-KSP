@@ -95,11 +95,26 @@ export default function ChatCanvasPage() {
 
               <h3 className="font-bold text-base mt-2 text-white">{selectedNode.label}</h3>
 
-              {/* If Evidence has an image preview */}
+              {/* Suspect profile photo */}
+              {selectedNode.type === "suspect" && selectedNode.data?.photo_url && (
+                <div className="mt-3 rounded-lg overflow-hidden border border-gray-700 bg-black/40">
+                  <div className="bg-gray-800/80 px-2 py-1 text-[10px] font-mono text-gray-300 flex justify-between items-center">
+                    <span>KSP BIOMETRIC RECORD</span>
+                    <span className="text-emerald-400 font-bold">ON FILE</span>
+                  </div>
+                  <img
+                    src={selectedNode.data.photo_url}
+                    alt={selectedNode.data?.name}
+                    className="w-full h-40 object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Evidence / photo proof */}
               {selectedNode.data?.image_url && (
                 <div className="mt-3 rounded-lg overflow-hidden border border-gray-700 bg-black/40">
                   <div className="bg-gray-800/80 px-2 py-1 text-[10px] font-mono text-gray-300 flex justify-between items-center">
-                    <span>DIGITAL EVIDENCE FILE</span>
+                    <span>{selectedNode.data?.type?.toUpperCase() || "EVIDENCE"} — {selectedNode.data?.source?.split("—")[0]?.trim() || "VERIFIED EXHIBIT"}</span>
                     <span className="text-emerald-400 font-bold">VERIFIED</span>
                   </div>
                   <img
