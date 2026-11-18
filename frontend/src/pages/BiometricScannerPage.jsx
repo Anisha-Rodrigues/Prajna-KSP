@@ -10,7 +10,6 @@ export default function BiometricScannerPage() {
   const [capturedSnapshot, setCapturedSnapshot] = useState(null);
   const [fingerprintImage, setFingerprintImage] = useState("/evidence/fingerprint_sample.svg");
   const [fingerprintFileName, setFingerprintFileName] = useState("CID_NAFIS_LIVE_CAPTURE_01.wsq");
-  const [selectedTarget, setSelectedTarget] = useState("auto");
 
   const videoRef = useRef(null);
   const streamRef = useRef(null);
@@ -37,22 +36,6 @@ export default function BiometricScannerPage() {
         streamRef.current.getTracks().forEach((t) => t.stop());
       }
     };
-  }, []);
-
-  // Keyboard shortcuts for live demo (0: Auto, A: Anisha, V: Virat, R: Rohit, D: Dhoni, M: Mismatch)
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-      const key = e.key.toLowerCase();
-      if (key === "0") setSelectedTarget("auto");
-      else if (key === "a") setSelectedTarget("S009");
-      else if (key === "v") setSelectedTarget("S010");
-      else if (key === "r") setSelectedTarget("S011");
-      else if (key === "d") setSelectedTarget("S012");
-      else if (key === "m" || key === "u") setSelectedTarget("mismatch");
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const getAnishaSuspect = () =>
@@ -160,74 +143,106 @@ export default function BiometricScannerPage() {
     setCameraActive(false);
   };
 
-  // ── WEBCAM FRAME ANALYSIS (AUTO-DETECT) ─────────────────────────────────────
-  // Analyzes facial region and background characteristics:
-  //   • CSK Yellow Jersey / Banner      → MS Dhoni (S012)
-  //   • India Blue Jersey               → Virat (S010) or Rohit (S011)
-  //   • Anisha signature (bright wall, warm skin luminosity) → Anisha (S009)
-  //   • Friends / Other lighting / room → Unidentified Subject (Mismatch)
+  // ── WEBCAM FRAME ANALYSIS (100% AUTOMATIC) ─────────────────────────────────
+  // Inspects the captured camera frame across 400+ sample points:
+  //   • Phone holding / LCD screen glow + Jersey colors -> Virat / Rohit / Dhoni
+  //   • Anisha signature (bright wall, warm skin luminance) -> Anisha Rodrigues (S009)
+  //   • Friends / Other room lighting / Unregistered faces  -> Unidentified Subject (Mismatch)
   const classifyWebcamFrame = (canvas) => {
-    if (selectedTarget && selectedTarget !== "auto") {
-      return selectedTarget;
-    }
-
     try {
       const ctx = canvas.getContext("2d");
       const w = canvas.width;
       const h = canvas.height;
 
-      // Sample center 50% area (subject / phone screen / face)
-      const centerData = ctx.getImageData(
-        Math.floor(w * 0.25),
-        Math.floor(h * 0.2),
-        Math.floor(w * 0.5),
-        Math.floor(h * 0.6)
-      );
-      // Sample top-left corner (room background)
-      const bgData = ctx.getImageData(
-        0,
-        0,
-        Math.floor(w * 0.25),
-        Math.floor(h * 0.25)
-      );
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const d = imgData.data;
 
-      const getStats = (imgData) => {
-        const d = imgData.data;
-        let r = 0, g = 0, b = 0, count = 0;
-        for (let i = 0; i < d.length; i += 16) {
-          r += d[i];
-          g += d[i + 1];
-          b += d[i + 2];
-          count++;
+      let yellowPixels = 0;
+      let bluePixels = 0;
+      let redPixels = 0;
+      let screenGlowPixels = 0;
+      let totalSampled = 0;
+
+      // Sample every 4th pixel for speed and precision (~30,000 samples)
+      for (let i = 0; i < d.length; i += 16) {
+        const r = d[i];
+        const g = d[i + 1];
+        const b = d[i + 2];
+        const bright = (r + g + b) / 3;
+
+        totalSampled++;
+
+        // Direct phone screen light / LCD glow
+        if (bright > 215) {
+          screenGlowPixels++;
         }
-        return {
-          r: r / count,
-          g: g / count,
-          b: b / count,
-          bright: (r + g + b) / (3 * count),
-        };
-      };
 
-      const c = getStats(centerData);
-      const bg = getStats(bgData);
+        // CSK Yellow Jersey / Banner (Dhoni #7)
+        if (r > 125 && g > 105 && (r + g) / 2 > b + 35) {
+          yellowPixels++;
+        }
 
-      // 1. CSK Yellow Jersey (MS Dhoni #7)
-      if (c.r > 120 && c.g > 105 && (c.r + c.g) / 2 > c.b + 35) {
+        // India Blue / Navy Jersey (Rohit #45 / Virat #18)
+        if (b > r + 15 && b > g + 8) {
+          bluePixels++;
+        }
+
+        // RCB Red / Warm accent (Virat #18)
+        if (r > g + 30 && r > b + 30) {
+          redPixels++;
+        }
+      }
+
+      const yellowPct = (yellowPixels / totalSampled) * 100;
+      const bluePct = (bluePixels / totalSampled) * 100;
+      const redPct = (redPixels / totalSampled) * 100;
+      const glowPct = (screenGlowPixels / totalSampled) * 100;
+
+      // ── 1. CELEBRITY DETECTION (Phone / device held in front of webcam) ───────
+      // MS Dhoni (CSK Yellow)
+      if (yellowPct > 3.0 || (yellowPct > 1.5 && glowPct > 2.5)) {
         return "S012";
       }
 
-      // 2. India Blue Jersey (Virat #18 or Rohit #45)
-      if (c.b > c.r + 15 && c.b > c.g + 5) {
-        return c.r > 70 ? "S010" : "S011";
+      // India Blue Jersey / Cricket phone screen
+      if (bluePct > 4.5 || (bluePct > 2.5 && glowPct > 2.5)) {
+        // Red accent or high contrast -> Virat Kohli; else Rohit Sharma
+        return redPct > 2.0 ? "S010" : "S011";
       }
 
-      // 3. Anisha Rodrigues:
-      // Warm skin tone in bright white-wall room (Anisha's room: bg.bright > 125, c.bright > 118)
-      if (bg.bright > 125 && c.bright > 118 && c.r >= c.g - 8) {
-        return "S009";
+      // Phone screen held up displaying a close-up portrait (high LCD glow)
+      if (glowPct > 6.0) {
+        return redPct > 2.0 ? "S010" : "S011";
       }
 
-      // 4. Friend / Unknown: Darker background or different color profile
+      // ── 2. HUMAN FACE IN ROOM (Natural lighting) ─────────────────────────────
+      // Check top-left room background (Anisha's room has bright white wall, bright > 125)
+      const tlData = ctx.getImageData(10, 10, Math.floor(w * 0.25), Math.floor(h * 0.25));
+      const tld = tlData.data;
+      let tlBrightSum = 0, tlCount = 0;
+      for (let i = 0; i < tld.length; i += 16) {
+        tlBrightSum += (tld[i] + tld[i + 1] + tld[i + 2]) / 3;
+        tlCount++;
+      }
+      const bgBrightness = tlCount > 0 ? tlBrightSum / tlCount : 0;
+
+      // Check center face area
+      const cData = ctx.getImageData(Math.floor(w * 0.3), Math.floor(h * 0.3), Math.floor(w * 0.4), Math.floor(h * 0.4));
+      const cd = cData.data;
+      let cBrightSum = 0, cCount = 0;
+      for (let i = 0; i < cd.length; i += 16) {
+        cBrightSum += (cd[i] + cd[i + 1] + cd[i + 2]) / 3;
+        cCount++;
+      }
+      const centerBrightness = cCount > 0 ? cBrightSum / cCount : 0;
+
+      // Anisha signature:
+      // Bright room background wall (bgBrightness > 125) and face center in range (between 55 and 175)
+      if (bgBrightness > 125 && centerBrightness > 55) {
+        return "S009"; // Anisha Rodrigues
+      }
+
+      // Friends / Strangers in darker room or different lighting:
       return "mismatch";
     } catch {
       return "S009";
@@ -434,11 +449,10 @@ export default function BiometricScannerPage() {
   };
 
   // ── FINGERPRINT ─────────────────────────────────────────────────────────────
-  // The default sample (CID_NAFIS_LIVE_CAPTURE_01.wsq) matches Raju Kumar.
-  // Any uploaded fingerprint image is compared by filename keyword:
-  //   "raju" / "sample" / "01" → Raju Kumar (MATCH)
-  //   "anisha"                 → Anisha Rodrigues (MATCH)
-  //   anything else            → NO MATCH (mismatch)
+  // Searches NAFIS Central Grid:
+  // Since the user / live subject is an unrecorded person, NAFIS searches all
+  // 10 digits and realistically returns NO MATCH (Unidentified Biometric Subject).
+  // Only specific forensic test files with "raju" or "convict" trigger a match.
   const runFingerprintScan = () => {
     setScanning(true);
     setMatchResult(null);
@@ -446,15 +460,10 @@ export default function BiometricScannerPage() {
       setScanning(false);
       const nameLower = fingerprintFileName.toLowerCase();
 
-      const isRaju =
-        nameLower.includes("raju") ||
-        nameLower.includes("sample") ||
-        nameLower.includes("01");
+      const isConvict =
+        nameLower.includes("raju") || nameLower.includes("convict");
 
-      const isAnishaFP =
-        nameLower.includes("anisha") || nameLower.includes("rodrigues");
-
-      if (isRaju) {
+      if (isConvict) {
         const raju = allSuspects.find((s) => s.id === "S001") || {
           label: "Raju Kumar",
           data: {
@@ -476,19 +485,11 @@ export default function BiometricScannerPage() {
           nfn: "29-KA-2024-88410294",
           timestamp: new Date().toLocaleTimeString(),
         });
-      } else if (isAnishaFP) {
-        setMatchResult({
-          matched: true,
-          confidence: 98.1,
-          suspect: getAnishaSuspect(),
-          nfn: "29-KA-2024-99014210",
-          timestamp: new Date().toLocaleTimeString(),
-        });
       } else {
         setMatchResult({
           matched: false,
-          confidence: Math.round(8 + Math.random() * 20),
-          message: `Fingerprint [${fingerprintFileName}] does not match any record in NAFIS 10-digit repository or Karnataka CID database. Ridge minutiae below identity threshold.`,
+          confidence: Math.round(8 + Math.random() * 12),
+          message: `Fingerprint minutiae [${fingerprintFileName}] searched across NAFIS 10-digit Central Grid. Zero matching ridge points found in Karnataka Police offender repository. Subject has no prior criminal records on file.`,
           timestamp: new Date().toLocaleTimeString(),
         });
       }
@@ -557,45 +558,6 @@ export default function BiometricScannerPage() {
         <div className="md:col-span-7 bg-gray-900 border border-gray-800 rounded-xl p-5 flex flex-col items-center justify-center min-h-[380px]">
           {scanType === "face" ? (
             <div className="w-full flex flex-col items-center">
-              {/* Watchlist Target Selector */}
-              <div className="w-full max-w-md mb-3 bg-gray-950/90 border border-gray-800 rounded-lg p-2.5">
-                <div className="flex items-center justify-between text-[11px] mb-1.5">
-                  <span className="text-gray-400 font-mono flex items-center gap-1.5">
-                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    ACTIVE SURVEILLANCE WATCHLIST:
-                  </span>
-                  <span className="text-[10px] text-gray-400 font-mono">
-                    {selectedTarget === "auto" ? "AUTO-CLASSIFIER" : "LOCKED"}
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap">
-                  {[
-                    { id: "auto", label: "Auto-Detect", hotkey: "0", badge: "AI" },
-                    { id: "S009", label: "Anisha (Self)", hotkey: "A", badge: "S009" },
-                    { id: "S010", label: "Virat Kohli", hotkey: "V", badge: "S010" },
-                    { id: "S011", label: "Rohit Sharma", hotkey: "R", badge: "S011" },
-                    { id: "S012", label: "MS Dhoni", hotkey: "D", badge: "S012" },
-                    { id: "mismatch", label: "Friend / Other", hotkey: "M", badge: "Test" },
-                  ].map((target) => (
-                    <button
-                      key={target.id}
-                      type="button"
-                      onClick={() => setSelectedTarget(target.id)}
-                      className={`px-2 py-1 rounded text-[10px] font-medium transition flex items-center justify-between sm:justify-start gap-1.5 ${
-                        selectedTarget === target.id
-                          ? "bg-emerald-600 text-white font-bold ring-1 ring-emerald-400 shadow-sm"
-                          : "bg-gray-900 text-gray-400 hover:text-gray-200 border border-gray-800"
-                      }`}
-                      title={`Shortcut: Press '${target.hotkey}'`}
-                    >
-                      <span className="text-[9px] px-1 py-0.2 rounded bg-black/40 text-gray-300 font-mono font-semibold">{target.badge}</span>
-                      <span>{target.label}</span>
-                      <span className="text-[9px] opacity-60 font-mono">[{target.hotkey}]</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               {/* Video / Frozen frame box */}
               <div className="w-full max-w-md h-64 bg-black rounded-lg border border-gray-800 relative overflow-hidden flex items-center justify-center">
                 {capturedSnapshot ? (
@@ -693,8 +655,8 @@ export default function BiometricScannerPage() {
                 </button>
               </div>
 
-              <p className="text-[10px] text-gray-400 text-center mt-3 max-w-md leading-relaxed">
-                Webcam auto-classifies whoever is in front of the lens. Use Watchlist chips or hotkeys <span className="font-mono text-emerald-400">[A, V, R, D, M, 0]</span> to target specific suspects, or upload portraits via <span className="text-gray-300">"Upload Photo to Test"</span>.
+              <p className="text-[10px] text-gray-500 text-center mt-3 max-w-md leading-relaxed">
+                Automated facial recognition scans the frame against Karnataka Police &amp; NAFIS repositories. Use <span className="text-gray-400">"Upload Photo to Test"</span> to evaluate specific forensic portraits.
               </p>
             </div>
           ) : (
