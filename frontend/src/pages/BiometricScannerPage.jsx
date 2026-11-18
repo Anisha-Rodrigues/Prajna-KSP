@@ -513,8 +513,13 @@ export default function BiometricScannerPage() {
       {/* Header */}
       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            🛡️ Zero-ID Biometric &amp; Facial Recognition Scanner
+          <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2.5">
+            <span className="p-1.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 inline-flex items-center justify-center">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </span>
+            Zero-ID Biometric &amp; Facial Recognition Scanner
           </h2>
           <p className="text-xs text-gray-400 mt-1">
             Capture live suspect portrait via Webcam or scan NAFIS digital fingerprint.
@@ -524,19 +529,25 @@ export default function BiometricScannerPage() {
         <div className="flex bg-gray-900 border border-gray-800 p-1 rounded-lg">
           <button
             onClick={() => { setScanType("face"); setMatchResult(null); }}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 ${
               scanType === "face" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"
             }`}
           >
-            📹 Webcam / Face FRT
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            Webcam / Face FRT
           </button>
           <button
             onClick={() => { setScanType("fingerprint"); stopCamera(); setMatchResult(null); }}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition ${
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition flex items-center gap-1.5 ${
               scanType === "fingerprint" ? "bg-blue-600 text-white" : "text-gray-400 hover:text-white"
             }`}
           >
-            🖐️ NAFIS Fingerprint
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 004.07 9.8" />
+            </svg>
+            NAFIS Fingerprint
           </button>
         </div>
       </div>
@@ -554,29 +565,30 @@ export default function BiometricScannerPage() {
                     ACTIVE SURVEILLANCE WATCHLIST:
                   </span>
                   <span className="text-[10px] text-gray-400 font-mono">
-                    {selectedTarget === "auto" ? "🎯 AUTO-CLASSIFIER" : "LOCKED"}
+                    {selectedTarget === "auto" ? "AUTO-CLASSIFIER" : "LOCKED"}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-1.5 sm:flex sm:flex-wrap">
                   {[
-                    { id: "auto", label: "🎯 Auto-Detect", hotkey: "0" },
-                    { id: "S009", label: "👤 Anisha (Self)", hotkey: "A" },
-                    { id: "S010", label: "🏏 Virat Kohli", hotkey: "V" },
-                    { id: "S011", label: "🏏 Rohit Sharma", hotkey: "R" },
-                    { id: "S012", label: "🏏 MS Dhoni", hotkey: "D" },
-                    { id: "mismatch", label: "⚠️ Friend / Other", hotkey: "M" },
+                    { id: "auto", label: "Auto-Detect", hotkey: "0", badge: "AI" },
+                    { id: "S009", label: "Anisha (Self)", hotkey: "A", badge: "S009" },
+                    { id: "S010", label: "Virat Kohli", hotkey: "V", badge: "S010" },
+                    { id: "S011", label: "Rohit Sharma", hotkey: "R", badge: "S011" },
+                    { id: "S012", label: "MS Dhoni", hotkey: "D", badge: "S012" },
+                    { id: "mismatch", label: "Friend / Other", hotkey: "M", badge: "Test" },
                   ].map((target) => (
                     <button
                       key={target.id}
                       type="button"
                       onClick={() => setSelectedTarget(target.id)}
-                      className={`px-2 py-1 rounded text-[10px] font-medium transition flex items-center justify-between sm:justify-start gap-1 ${
+                      className={`px-2 py-1 rounded text-[10px] font-medium transition flex items-center justify-between sm:justify-start gap-1.5 ${
                         selectedTarget === target.id
                           ? "bg-emerald-600 text-white font-bold ring-1 ring-emerald-400 shadow-sm"
                           : "bg-gray-900 text-gray-400 hover:text-gray-200 border border-gray-800"
                       }`}
                       title={`Shortcut: Press '${target.hotkey}'`}
                     >
+                      <span className="text-[9px] px-1 py-0.2 rounded bg-black/40 text-gray-300 font-mono font-semibold">{target.badge}</span>
                       <span>{target.label}</span>
                       <span className="text-[9px] opacity-60 font-mono">[{target.hotkey}]</span>
                     </button>
@@ -592,7 +604,12 @@ export default function BiometricScannerPage() {
                   <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover block" />
                 ) : (
                   <div className="text-center p-6 text-gray-500">
-                    <div className="text-4xl mb-2">📷</div>
+                    <div className="h-12 w-12 rounded-xl bg-gray-800/80 border border-gray-700/80 mx-auto flex items-center justify-center text-gray-500 mb-2">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
                     <p className="text-xs">Webcam feed inactive</p>
                     <p className="text-[10px] text-gray-600 mt-1">Open camera or upload a portrait to verify</p>
                   </div>
@@ -624,8 +641,11 @@ export default function BiometricScannerPage() {
                 {!cameraActive && !capturedSnapshot ? (
                   <button
                     onClick={startCamera}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-medium transition shadow-md"
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-medium transition shadow-md flex items-center gap-1.5"
                   >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
                     Open Live Webcam
                   </button>
                 ) : cameraActive ? (
@@ -633,9 +653,13 @@ export default function BiometricScannerPage() {
                     <button
                       onClick={captureAndVerify}
                       disabled={scanning}
-                      className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-lg text-xs font-medium transition disabled:opacity-50 shadow-md"
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2 rounded-lg text-xs font-medium transition disabled:opacity-50 shadow-md flex items-center gap-1.5"
                     >
-                      {scanning ? "Processing Frame…" : "📸 Take Photo & Verify"}
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {scanning ? "Processing Frame…" : "Capture & Verify Identity"}
                     </button>
                     <button
                       onClick={stopCamera}
@@ -647,19 +671,25 @@ export default function BiometricScannerPage() {
                 ) : (
                   <button
                     onClick={handleRetake}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-medium transition shadow-md"
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-xs font-medium transition shadow-md flex items-center gap-1.5"
                   >
-                    🔄 Retake Live Photo
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Retake Live Photo
                   </button>
                 )}
 
                 <input type="file" accept="image/*" ref={faceInputRef} onChange={handleFaceUpload} className="hidden" />
                 <button
                   onClick={() => faceInputRef.current?.click()}
-                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 px-3 py-2 rounded-lg text-xs transition"
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 px-3 py-2 rounded-lg text-xs transition flex items-center gap-1.5"
                   title="Upload a friend's photo or any other portrait to test mismatch"
                 >
-                  📁 Upload Photo to Test
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Upload Photo to Test
                 </button>
               </div>
 
@@ -688,16 +718,22 @@ export default function BiometricScannerPage() {
                 <button
                   onClick={runFingerprintScan}
                   disabled={scanning}
-                  className="bg-sky-600 hover:bg-sky-500 text-white px-5 py-2 rounded-lg text-xs font-medium transition disabled:opacity-50"
+                  className="bg-sky-600 hover:bg-sky-500 text-white px-5 py-2 rounded-lg text-xs font-medium transition disabled:opacity-50 flex items-center gap-1.5"
                 >
-                  {scanning ? "Analyzing Ridge Coincidence…" : "🔍 Scan & Verify Fingerprint"}
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  {scanning ? "Analyzing Ridge Coincidence…" : "Scan & Verify Fingerprint"}
                 </button>
                 <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFingerprintUpload} className="hidden" />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 px-3 py-2 rounded-lg text-xs transition"
+                  className="bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 px-3 py-2 rounded-lg text-xs transition flex items-center gap-1.5"
                 >
-                  📁 Upload Print
+                  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  Upload Print
                 </button>
               </div>
               <p className="text-[10px] text-gray-500 text-center mt-3 max-w-xs">
@@ -728,7 +764,11 @@ export default function BiometricScannerPage() {
                         className="h-14 w-14 rounded-full object-cover border-2 border-emerald-500 shadow-md"
                       />
                     ) : (
-                      <div className="h-12 w-12 rounded-full bg-red-600/20 border border-red-500/40 flex items-center justify-center text-xl">👤</div>
+                      <div className="h-12 w-12 rounded-full bg-red-600/20 border border-red-500/40 flex items-center justify-center text-red-400">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
                     )}
                     <div>
                       <h3 className="font-bold text-base text-white">
@@ -788,7 +828,11 @@ export default function BiometricScannerPage() {
                   </div>
 
                   <div className="mt-5 text-center px-4">
-                    <div className="h-16 w-16 mx-auto rounded-full bg-rose-600/20 border border-rose-500/50 flex items-center justify-center text-3xl mb-3">⚠️</div>
+                    <div className="h-14 w-14 mx-auto rounded-full bg-rose-600/20 border border-rose-500/40 flex items-center justify-center text-rose-400 mb-3">
+                      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                    </div>
                     <h3 className="font-bold text-base text-rose-300">Unidentified Subject</h3>
                     <p className="text-xs text-gray-400 mt-2 leading-relaxed">{matchResult.message}</p>
                   </div>
@@ -814,10 +858,14 @@ export default function BiometricScannerPage() {
             )
           ) : (
             <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 flex-1 flex flex-col items-center justify-center text-center">
-              <div className="text-3xl mb-2 opacity-40">🔍</div>
+              <div className="h-12 w-12 rounded-xl bg-gray-800/60 border border-gray-700/60 flex items-center justify-center text-gray-400 mb-3">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
               <h4 className="font-semibold text-sm text-gray-400 mb-1">Awaiting Biometric Acquisition</h4>
               <p className="text-xs max-w-xs text-gray-500">
-                Open webcam and click "Take Photo &amp; Verify" to freeze your frame and search the database.
+                Open webcam and click "Capture &amp; Verify Identity" to freeze your frame and search the database.
                 Or upload a friend's photo to test mismatch.
               </p>
             </div>

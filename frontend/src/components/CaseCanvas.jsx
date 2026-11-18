@@ -167,17 +167,29 @@ export default function CaseCanvas({ nodes, edges, onNodeClick }) {
       .attr("stroke", "#030712")
       .attr("stroke-width", 2.5);
 
-    // Icon or short letter badge in node center
-    nodeG.append("text")
-      .text((d) => {
-        if (d.type === "suspect") return "👤";
-        if (d.type === "fir") return "📄";
-        if (d.type === "evidence") return "🔍";
-        return "📍";
-      })
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "central")
-      .attr("font-size", 12);
+    // Render clean, vector SVG icons inside each node circle (no emoji artifacts)
+    nodeG.each(function(d) {
+      const g = d3.select(this);
+      if (d.type === "suspect") {
+        g.append("circle").attr("cx", 0).attr("cy", -4).attr("r", 4.5).attr("fill", "#ffffff");
+        g.append("path").attr("d", "M -7,8 C -7,2 7,2 7,8 Z").attr("fill", "#ffffff");
+      } else if (d.type === "fir") {
+        g.append("path")
+          .attr("d", "M -5,-7 L 2,-7 L 6,-3 L 6,7 L -5,7 Z")
+          .attr("fill", "none")
+          .attr("stroke", "#ffffff")
+          .attr("stroke-width", 1.6);
+        g.append("line").attr("x1", -2).attr("y1", 0).attr("x2", 3).attr("y2", 0).attr("stroke", "#ffffff").attr("stroke-width", 1.4);
+        g.append("line").attr("x1", -2).attr("y1", 3).attr("x2", 1).attr("y2", 3).attr("stroke", "#ffffff").attr("stroke-width", 1.4);
+      } else if (d.type === "evidence") {
+        g.append("circle").attr("cx", -1).attr("cy", -2).attr("r", 4.5).attr("fill", "none").attr("stroke", "#ffffff").attr("stroke-width", 1.7);
+        g.append("line").attr("x1", 2.5).attr("y1", 1.5).attr("x2", 6.5).attr("y2", 5.5).attr("stroke", "#ffffff").attr("stroke-width", 2).attr("stroke-linecap", "round");
+      } else {
+        // Location
+        g.append("path").attr("d", "M 0,-8 C -4.5,-8 -4.5,-2 0,7 C 4.5,-2 4.5,-8 0,-8 Z").attr("fill", "#ffffff");
+        g.append("circle").attr("cx", 0).attr("cy", -4).attr("r", 2).attr("fill", "#15803d");
+      }
+    });
 
     const label = nodeG
       .append("text")

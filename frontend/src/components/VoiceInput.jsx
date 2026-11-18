@@ -53,11 +53,14 @@ export default function VoiceInput({ onResult }) {
 
       <button
         onClick={isListening ? stopListening : startListening}
-        className={`px-3 py-1 rounded-full text-sm font-medium transition ${
-          isListening ? "bg-red-600 animate-pulse" : "bg-blue-600 hover:bg-blue-500"
+        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 ${
+          isListening ? "bg-red-600 animate-pulse text-white" : "bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700"
         }`}
       >
-        {isListening ? "● Listening..." : "🎤 Speak"}
+        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+        </svg>
+        {isListening ? "Listening…" : "Voice Query"}
       </button>
 
       {error && <span className="text-red-400 text-xs">{error}</span>}
