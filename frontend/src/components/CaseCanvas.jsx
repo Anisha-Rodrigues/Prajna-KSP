@@ -53,10 +53,10 @@ export default function CaseCanvas({ nodes, edges, onNodeClick }) {
     try {
       const simulation = d3
         .forceSimulation(nodesCopy)
-        .force("link", d3.forceLink(edgesCopy).id((d) => d.id).distance(120))
-        .force("charge", d3.forceManyBody().strength(-300))
+        .force("link", d3.forceLink(edgesCopy).id((d) => d.id).distance(180))
+        .force("charge", d3.forceManyBody().strength(-600))
         .force("center", d3.forceCenter(width / 2, height / 2))
-        .force("collide", d3.forceCollide().radius(40));
+        .force("collide", d3.forceCollide().radius(60));
 
       simulationRef.current = simulation;
 
@@ -88,19 +88,44 @@ export default function CaseCanvas({ nodes, edges, onNodeClick }) {
       .selectAll("line")
       .data(edgesCopy)
       .join("line")
-      .attr("stroke", "#374151")
-      .attr("stroke-width", 2)
+      .attr("stroke", "#4b5563")
+      .attr("stroke-width", 1.5)
       .attr("stroke-dasharray", (d) => d.relationship?.includes("evidence") ? "4,3" : "none");
 
-    const linkLabel = container
+    // Clean, pill-style relationship labels that do NOT overlap
+    const linkLabelGroup = container
       .append("g")
-      .selectAll("text")
+      .selectAll("g")
       .data(edgesCopy)
-      .join("text")
+      .join("g")
+      .style("pointer-events", "none");
+
+    const linkLabelRect = linkLabelGroup
+      .append("rect")
+      .attr("fill", "#111827")
+      .attr("rx", 3)
+      .attr("stroke", "#374151")
+      .attr("stroke-width", 0.5)
+      .attr("opacity", 0.85);
+
+    const linkLabelText = linkLabelGroup
+      .append("text")
       .text((d) => d.relationship || "")
-      .attr("font-size", 8)
-      .attr("font-family", "monospace")
-      .attr("fill", "#6b7280");
+      .attr("font-size", 8.5)
+      .attr("font-family", "system-ui, sans-serif")
+      .attr("fill", "#9ca3af")
+      .attr("text-anchor", "middle")
+      .attr("alignment-baseline", "central");
+
+    linkLabelGroup.each(function() {
+      const text = d3.select(this).select("text");
+      const bbox = text.node().getBBox();
+      d3.select(this).select("rect")
+        .attr("x", bbox.x - 3)
+        .attr("y", bbox.y - 1.5)
+        .attr("width", bbox.width + 6)
+        .attr("height", bbox.height + 3);
+    });
 
     // Modern node circles with outer rings
     const nodeG = container
@@ -171,9 +196,8 @@ export default function CaseCanvas({ nodes, edges, onNodeClick }) {
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
 
-        linkLabel
-          .attr("x", (d) => (d.source.x + d.target.x) / 2)
-          .attr("y", (d) => (d.source.y + d.target.y) / 2);
+        linkLabelGroup
+          .attr("transform", (d) => `translate(${(d.source.x + d.target.x) / 2}, ${(d.source.y + d.target.y) / 2})`);
 
         nodeG.attr("transform", (d) => `translate(${d.x},${d.y})`);
       });

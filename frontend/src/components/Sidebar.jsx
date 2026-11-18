@@ -5,6 +5,7 @@ import { getAlerts } from "../utils/api";
 const LINKS = [
   { to: "/app", label: "Home", icon: "⌂", end: true },
   { to: "/app/chat", label: "Case Canvas & Chat", icon: "◈" },
+  { to: "/app/scanner", label: "Biometric Scanner", icon: "🛡️" },
   { to: "/app/pressure", label: "Pressure Map", icon: "◉" },
   { to: "/app/profile", label: "Officer Profile", icon: "◷" },
 ];

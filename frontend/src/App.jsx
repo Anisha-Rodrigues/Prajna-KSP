@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import DashboardLayout from "./pages/DashboardLayout";
 import HomePage from "./pages/HomePage";
 import ChatCanvasPage from "./pages/ChatCanvasPage";
+import BiometricScannerPage from "./pages/BiometricScannerPage";
 import PressureMapPage from "./pages/PressureMapPage";
 import ProfilePage from "./pages/ProfilePage";
 
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="/app" element={<DashboardLayout />}>
             <Route index element={<HomePage />} />
             <Route path="chat" element={<ChatCanvasPage />} />
+            <Route path="scanner" element={<BiometricScannerPage />} />
             <Route path="pressure" element={<PressureMapPage />} />
             <Route path="profile" element={<ProfilePage />} />
           </Route>

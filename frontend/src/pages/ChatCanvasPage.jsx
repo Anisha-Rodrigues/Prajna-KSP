@@ -144,19 +144,27 @@ export default function ChatCanvasPage() {
                 )}
 
                 {selectedNode.type === "fir" && (
-                  <div className="space-y-1.5 pt-1 text-[11px]">
-                    <div className="bg-gray-800/60 p-2 rounded flex justify-between">
-                      <span className="text-gray-500">Jurisdiction:</span>
-                      <span className="text-blue-300 font-medium">{selectedNode.data?.police_station}</span>
+                  <div className="space-y-2 pt-1 text-[11px]">
+                    <div className="bg-gray-800/80 p-2.5 rounded-lg border border-gray-700">
+                      <div className="text-[10px] font-mono text-blue-400 font-bold mb-1">OFFICIAL FIR DOSSIER SUMMARY</div>
+                      <p className="text-gray-200 text-xs leading-relaxed mb-2">
+                        {selectedNode.data?.description}
+                      </p>
+                      <div className="grid grid-cols-2 gap-1 text-[10px] text-gray-400 pt-1.5 border-t border-gray-700/60">
+                        <div><span className="text-gray-500">Police Station:</span> {selectedNode.data?.police_station}</div>
+                        <div><span className="text-gray-500">Incident Date:</span> {selectedNode.data?.date}</div>
+                        <div><span className="text-gray-500">IPC/BNS Offense:</span> <span className="text-amber-300 font-semibold uppercase">{selectedNode.data?.crime_type}</span></div>
+                        <div><span className="text-gray-500">Case Status:</span> <span className="text-emerald-400 uppercase">{selectedNode.data?.status?.replace('_', ' ')}</span></div>
+                      </div>
                     </div>
-                    <div className="bg-gray-800/60 p-2 rounded flex justify-between">
-                      <span className="text-gray-500">Offense Type:</span>
-                      <span className="text-gray-200 uppercase font-semibold">{selectedNode.data?.crime_type}</span>
-                    </div>
-                    <div className="bg-gray-800/60 p-2 rounded flex justify-between">
-                      <span className="text-gray-500">Status:</span>
-                      <span className="text-emerald-400 capitalize">{selectedNode.data?.status?.replace('_', ' ')}</span>
-                    </div>
+
+                    {/* Associated suspects in this FIR */}
+                    {selectedNode.data?.suspect_names && (
+                      <div className="bg-gray-950/80 p-2 rounded border border-gray-800">
+                        <span className="text-gray-500 text-[10px] block">Chargesheeted Accused:</span>
+                        <span className="text-rose-400 font-medium">{selectedNode.data.suspect_names.join(", ")}</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
