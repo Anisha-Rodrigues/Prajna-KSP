@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 240" width="100%" height="100%">
+  <rect width="360" height="240" fill="#0f172a"/>
+  
+  <rect x="15" y="15" width="330" height="210" fill="#1e293b" stroke="#3b82f6" stroke-width="1.5" rx="6"/>
+  <rect x="15" y="15" width="330" height="32" fill="#1e40af" rx="5"/>
+  <text x="25" y="36" fill="#ffffff" font-family="monospace" font-size="11" font-weight="bold">BANK OF KARNATAKA · ATM E-LOG JOURNAL</text>
+  
+  <g transform="translate(25, 60)" font-family="monospace" font-size="9" fill="#94a3b8">
+    <text x="0" y="15" fill="#e2e8f0">TERMINAL: ATM-WFD-4402 (HOPE FARM JUNCTION)</text>
+    <text x="0" y="30">TIMESTAMP: 2024-08-12 02:14:08 IST</text>
+    <text x="0" y="45">EVENT: <tspan fill="#ef4444" font-weight="bold">SKIMMER DEVICE ATTACHED TO CARD BEZEL</tspan></text>
+    <text x="0" y="60">CARD READ ATTEMPTS: 14 CLONED CARDS TRANSFERRED</text>
+    <text x="0" y="75">TXN AMOUNT: ₹45,000 DISPENSED (SUSPICIOUS PIN SPIKE)</text>
+    <text x="0" y="90">STATUS: TAMPER ALARM TRIGGERED · DISPATCH PATROL</text>
+  </g>
+  
+  <rect x="25" y="170" width="310" height="40" fill="#090d16" stroke="#334155" rx="4"/>
+  <text x="35" y="186" fill="#38bdf8" font-family="monospace" font-size="9" font-weight="bold">HARDWARE TELEMETRY:</text>
+  <text x="35" y="200" fill="#64748b" font-family="monospace" font-size="8">MAGNETIC STRIPE READER DIVERGENCE + EXTERNAL OVERLAY VOLTAGE DETECTED</text>
+</svg>

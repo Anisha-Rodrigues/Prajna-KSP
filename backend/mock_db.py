@@ -133,6 +133,33 @@ SUSPECTS = {
             "ATM skimming cases."
         ),
     },
+    "S009": {
+        "id": "S009",
+        "name": "Anisha Rodrigues",
+        "aliases": ["Anisha", "AR"],
+        "risk_level": "medium",
+        "status": "active",
+        "bail_status": "under_investigation",
+        "bail_release_date": None,
+        "district": "Bengaluru Urban",
+        "photo_url": "/evidence/anisha_photo.jpg",
+        "known_associates": ["S006"],
+        "linked_firs": [
+            "KA/BLR/2024/006",
+        ],
+        "crime_types": [
+            "cybercrime",
+            "digital forensics testing",
+        ],
+        "known_locations": [
+            "Koramangala",
+            "Whitefield",
+        ],
+        "description": (
+            "Suspect identified under cyber-forensics surveillance. "
+            "Facial recognition feature vector stored in KSP biometric repository."
+        ),
+    },
     "S005": {
         "id": "S005",
         "name": "Deepa Hegde",
@@ -622,15 +649,19 @@ EVIDENCE = {
     "E009": {
         "id": "E009",
         "type": "ATM",
-        "description": (
-            "ATM transaction records showing suspicious activity"
-        ),
+        "description": "Digital forensic ATM card reader telemetry showing physical skimming overlay device attached at 02:14 AM.",
+        "image_url": "/evidence/atm_log_sample.svg",
+        "timestamp": "2024-08-12 02:14:08 IST",
+        "source": "Bank of Karnataka Hope Farm Branch",
         "linked_firs": ["KA/BLR/2024/005"],
     },
     "E010": {
         "id": "E010",
         "type": "CCTV",
-        "description": "ATM surveillance footage from Whitefield",
+        "description": "ATM booth surveillance camera grab showing suspect tampering with card insertion slot with face partially concealed.",
+        "image_url": "/evidence/cctv_sample.svg",
+        "timestamp": "2024-08-12 02:13:55 IST",
+        "source": "Whitefield ATM Security Grid",
         "linked_firs": ["KA/BLR/2024/005"],
     },
     "E011": {
