@@ -75,20 +75,91 @@ export default function ChatCanvasPage() {
         <div className="flex-1 relative">
           <CaseCanvas nodes={nodes} edges={edges} onNodeClick={setSelectedNode} />
           {selectedNode && (
-            <div className="absolute top-4 right-4 bg-gray-900 border border-gray-700 rounded-lg p-4 w-72 shadow-xl">
-              <button
-                onClick={() => setSelectedNode(null)}
-                className="float-right text-gray-500 hover:text-white"
-              >
-                ✕
-              </button>
-              <h3 className="font-semibold text-sm">{selectedNode.label}</h3>
-              <p className="text-xs text-gray-400 capitalize">
-                {selectedNode.type}
-              </p>
-              <pre className="text-xs mt-2 text-gray-300 whitespace-pre-wrap">
-                {JSON.stringify(selectedNode, null, 2)}
-              </pre>
+            <div className="absolute top-4 right-4 bg-gray-900/95 backdrop-blur-md border border-gray-700 rounded-xl p-4 w-80 shadow-2xl z-40 max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between pb-2 border-b border-gray-800">
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                  selectedNode.type === "suspect" ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                  selectedNode.type === "fir" ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
+                  selectedNode.type === "evidence" ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30" :
+                  "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                }`}>
+                  {selectedNode.type} Entity
+                </span>
+                <button
+                  onClick={() => setSelectedNode(null)}
+                  className="text-gray-400 hover:text-white text-sm p-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <h3 className="font-bold text-base mt-2 text-white">{selectedNode.label}</h3>
+
+              {/* If Evidence has an image preview */}
+              {selectedNode.data?.image_url && (
+                <div className="mt-3 rounded-lg overflow-hidden border border-gray-700 bg-black/40">
+                  <div className="bg-gray-800/80 px-2 py-1 text-[10px] font-mono text-gray-300 flex justify-between items-center">
+                    <span>DIGITAL EVIDENCE FILE</span>
+                    <span className="text-emerald-400 font-bold">VERIFIED</span>
+                  </div>
+                  <img
+                    src={selectedNode.data.image_url}
+                    alt={selectedNode.label}
+                    className="w-full h-44 object-cover"
+                  />
+                  {selectedNode.data.timestamp && (
+                    <div className="p-2 text-[10px] font-mono text-gray-400 border-t border-gray-800">
+                      <div>Logged: {selectedNode.data.timestamp}</div>
+                      <div className="text-gray-500 truncate">Source: {selectedNode.data.source}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Description & Structured details */}
+              <div className="mt-3 space-y-2 text-xs">
+                {selectedNode.data?.description && (
+                  <p className="text-gray-300 leading-relaxed bg-gray-950/60 p-2.5 rounded-lg border border-gray-800/80">
+                    {selectedNode.data.description}
+                  </p>
+                )}
+
+                {selectedNode.type === "suspect" && (
+                  <div className="grid grid-cols-2 gap-1.5 pt-1 text-[11px]">
+                    <div className="bg-gray-800/60 p-2 rounded">
+                      <span className="text-gray-500 block">Risk Category</span>
+                      <span className="font-semibold text-rose-400 uppercase">{selectedNode.data?.risk_level}</span>
+                    </div>
+                    <div className="bg-gray-800/60 p-2 rounded">
+                      <span className="text-gray-500 block">Bail Status</span>
+                      <span className="font-semibold text-amber-300">{selectedNode.data?.bail_status?.replace('_', ' ')}</span>
+                    </div>
+                    {selectedNode.data?.known_locations && (
+                      <div className="col-span-2 bg-gray-800/60 p-2 rounded">
+                        <span className="text-gray-500 block">Frequent Jurisdictions</span>
+                        <span className="text-gray-200">{selectedNode.data.known_locations.join(", ")}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {selectedNode.type === "fir" && (
+                  <div className="space-y-1.5 pt-1 text-[11px]">
+                    <div className="bg-gray-800/60 p-2 rounded flex justify-between">
+                      <span className="text-gray-500">Jurisdiction:</span>
+                      <span className="text-blue-300 font-medium">{selectedNode.data?.police_station}</span>
+                    </div>
+                    <div className="bg-gray-800/60 p-2 rounded flex justify-between">
+                      <span className="text-gray-500">Offense Type:</span>
+                      <span className="text-gray-200 uppercase font-semibold">{selectedNode.data?.crime_type}</span>
+                    </div>
+                    <div className="bg-gray-800/60 p-2 rounded flex justify-between">
+                      <span className="text-gray-500">Status:</span>
+                      <span className="text-emerald-400 capitalize">{selectedNode.data?.status?.replace('_', ' ')}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

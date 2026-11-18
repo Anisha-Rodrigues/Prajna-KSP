@@ -89,6 +89,37 @@ export default function ChatPanel({ officerId, sessionId, onNodesReceived, onAiR
                   Cited: {m.citedFirs.join(", ")}
                 </p>
               )}
+              {m.role === "ai" && i > 0 && (
+                <div className="mt-2 pt-1.5 border-t border-gray-700/60 flex items-center justify-between text-[11px] text-gray-400">
+                  <span>Officer Assessment:</span>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={async (e) => {
+                        e.currentTarget.classList.add("text-emerald-400", "font-bold");
+                        try {
+                          await saveMemory(officerId, "Concurrence", m.text, "concurred");
+                        } catch {}
+                      }}
+                      className="hover:text-emerald-400 transition"
+                      title="Agree with this AI finding"
+                    >
+                      ✓ Agree
+                    </button>
+                    <button
+                      onClick={async (e) => {
+                        e.currentTarget.classList.add("text-rose-400", "font-bold");
+                        try {
+                          await saveMemory(officerId, "Officer Dissent", m.text, "dissent");
+                        } catch {}
+                      }}
+                      className="hover:text-rose-400 transition"
+                      title="Disagree with this AI finding (Dissent Flag)"
+                    >
+                      ✕ Disagree (Dissent)
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}

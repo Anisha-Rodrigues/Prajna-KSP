@@ -60,32 +60,54 @@ export default function CaseCanvas({ nodes, edges, onNodeClick }) {
 
       simulationRef.current = simulation;
 
+    // Dynamic glow defs and modern styling
+    const defs = svg.append("defs");
+    
+    // Grid pattern
+    const pattern = defs.append("pattern")
+      .attr("id", "canvasGrid")
+      .attr("width", 30)
+      .attr("height", 30)
+      .attr("patternUnits", "userSpaceOnUse");
+    pattern.append("circle")
+      .attr("cx", 2)
+      .attr("cy", 2)
+      .attr("r", 0.8)
+      .attr("fill", "#374151");
+
+    container.append("rect")
+      .attr("x", -2000)
+      .attr("y", -2000)
+      .attr("width", 5000)
+      .attr("height", 5000)
+      .attr("fill", "url(#canvasGrid)")
+      .attr("opacity", 0.5);
+
     const link = container
       .append("g")
       .selectAll("line")
       .data(edgesCopy)
       .join("line")
-      .attr("stroke", "#4b5563")
-      .attr("stroke-width", 1.5);
+      .attr("stroke", "#374151")
+      .attr("stroke-width", 2)
+      .attr("stroke-dasharray", (d) => d.relationship?.includes("evidence") ? "4,3" : "none");
 
     const linkLabel = container
       .append("g")
       .selectAll("text")
       .data(edgesCopy)
       .join("text")
-      .text((d) => d.label || "")
-      .attr("font-size", 9)
-      .attr("fill", "#9ca3af");
+      .text((d) => d.relationship || "")
+      .attr("font-size", 8)
+      .attr("font-family", "monospace")
+      .attr("fill", "#6b7280");
 
-    const node = container
+    // Modern node circles with outer rings
+    const nodeG = container
       .append("g")
-      .selectAll("circle")
+      .selectAll("g")
       .data(nodesCopy)
-      .join("circle")
-      .attr("r", 22)
-      .attr("fill", (d) => NODE_COLORS[d.type] || "#a3a3a3")
-      .attr("stroke", "#111827")
-      .attr("stroke-width", 2)
+      .join("g")
       .style("cursor", "pointer")
       .on("click", (event, d) => onNodeClick && onNodeClick(d))
       .call(
@@ -107,16 +129,40 @@ export default function CaseCanvas({ nodes, edges, onNodeClick }) {
           })
       );
 
-    const label = container
-      .append("g")
-      .selectAll("text")
-      .data(nodesCopy)
-      .join("text")
+    // Halo pulse ring
+    nodeG.append("circle")
+      .attr("r", 28)
+      .attr("fill", (d) => NODE_COLORS[d.type] || "#a3a3a3")
+      .attr("opacity", 0.15);
+
+    // Inner core
+    nodeG.append("circle")
+      .attr("r", 20)
+      .attr("fill", (d) => NODE_COLORS[d.type] || "#a3a3a3")
+      .attr("stroke", "#030712")
+      .attr("stroke-width", 2.5);
+
+    // Icon or short letter badge in node center
+    nodeG.append("text")
+      .text((d) => {
+        if (d.type === "suspect") return "👤";
+        if (d.type === "fir") return "📄";
+        if (d.type === "evidence") return "🔍";
+        return "📍";
+      })
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "central")
+      .attr("font-size", 12);
+
+    const label = nodeG
+      .append("text")
       .text((d) => d.label || d.id)
       .attr("font-size", 10)
+      .attr("font-family", "system-ui, sans-serif")
+      .attr("font-weight", "500")
       .attr("fill", "#f3f4f6")
       .attr("text-anchor", "middle")
-      .attr("dy", 35);
+      .attr("dy", 36);
 
       simulation.on("tick", () => {
         link
@@ -129,8 +175,7 @@ export default function CaseCanvas({ nodes, edges, onNodeClick }) {
           .attr("x", (d) => (d.source.x + d.target.x) / 2)
           .attr("y", (d) => (d.source.y + d.target.y) / 2);
 
-        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-        label.attr("x", (d) => d.x).attr("y", (d) => d.y);
+        nodeG.attr("transform", (d) => `translate(${d.x},${d.y})`);
       });
     } catch (simErr) {
       console.error("D3 simulation error:", simErr);

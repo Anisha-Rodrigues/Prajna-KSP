@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 250" width="100%" height="100%">
+  <rect width="350" height="250" fill="#0f172a"/>
+  <!-- Scanner background lines -->
+  <line x1="0" y1="125" x2="350" y2="125" stroke="#0ea5e9" stroke-width="1" opacity="0.4"/>
+  
+  <!-- Biometric HUD -->
+  <text x="15" y="25" fill="#38bdf8" font-family="monospace" font-size="11" font-weight="bold">NAFIS BIOMETRIC IDENTIFICATION</text>
+  <text x="15" y="42" fill="#64748b" font-family="monospace" font-size="9">NFN: 29-KA-2024-88410294</text>
+  <text x="260" y="25" fill="#10b981" font-family="monospace" font-size="10">MATCH 98.4%</text>
+
+  <!-- Fingerprint loops and whorls -->
+  <g transform="translate(115, 60)" stroke="#38bdf8" stroke-width="2" fill="none" opacity="0.85">
+    <ellipse cx="60" cy="80" rx="10" ry="15"/>
+    <ellipse cx="60" cy="80" rx="20" ry="28"/>
+    <ellipse cx="60" cy="80" rx="30" ry="42"/>
+    <ellipse cx="60" cy="80" rx="40" ry="56"/>
+    <ellipse cx="60" cy="80" rx="50" ry="70"/>
+    <path d="M 10 130 C 20 60, 100 60, 110 130"/>
+    <path d="M 0 150 C 15 40, 105 40, 120 150"/>
+  </g>
+
+  <!-- Scanner beam -->
+  <line x1="50" y1="145" x2="300" y2="145" stroke="#ef4444" stroke-width="2" stroke-dasharray="8,4"/>
+  
+  <!-- Forensic Footer -->
+  <rect x="15" y="215" width="320" height="22" fill="#1e293b" rx="3"/>
+  <text x="25" y="230" fill="#f8fafc" font-family="monospace" font-size="9">RIDGE COINCIDENCE: 14 MINUTIAE POINTS VERIFIED</text>
+</svg>
