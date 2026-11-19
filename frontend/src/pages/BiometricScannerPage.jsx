@@ -54,67 +54,6 @@ export default function BiometricScannerPage() {
       },
     };
 
-  const getSuspectProfile = (id) => {
-    if (id === "S010") {
-      return (
-        allSuspects.find((s) => s.id === "S010") || {
-          label: "Virat Kohli",
-          data: {
-            id: "S010",
-            name: "Virat Kohli",
-            risk_level: "high",
-            bail_status: "not_on_bail",
-            district: "Bengaluru Urban",
-            photo_url: "/evidence/virat_photo.svg",
-            linked_firs: ["KA/BLR/2024/008", "KA/BLR/2024/009"],
-            nfn: "29-KA-2024-18001818",
-            description:
-              "High-risk absconding suspect flagged for financial fraud and hawala transactions across Mumbai and Bengaluru. Identified via CCTV near Chinnaswamy Stadium. Currently evading arrest.",
-          },
-        }
-      );
-    }
-    if (id === "S011") {
-      return (
-        allSuspects.find((s) => s.id === "S011") || {
-          label: "Rohit Sharma",
-          data: {
-            id: "S011",
-            name: "Rohit Sharma",
-            risk_level: "high",
-            bail_status: "on_bail",
-            district: "Mumbai (Inter-state Warrant)",
-            photo_url: "/evidence/rohit_photo.svg",
-            linked_firs: ["KA/BLR/2024/008"],
-            nfn: "29-KA-2024-45004500",
-            description:
-              "Active suspect released on bail, linked to inter-state money laundering ring. Associated with Virat Kohli. Monitored by ED and KSP joint task force.",
-          },
-        }
-      );
-    }
-    if (id === "S012") {
-      return (
-        allSuspects.find((s) => s.id === "S012") || {
-          label: "MS Dhoni",
-          data: {
-            id: "S012",
-            name: "Mahendra Singh Dhoni",
-            risk_level: "medium",
-            bail_status: "under_investigation",
-            district: "Chennai / Ranchi (Inter-state)",
-            photo_url: "/evidence/dhoni_photo.svg",
-            linked_firs: ["KA/BLR/2024/010"],
-            nfn: "29-KA-2024-70001975",
-            description:
-              "Under investigation for benami property transactions and land acquisition fraud in Bengaluru tech corridor. Cooperating with investigation.",
-          },
-        }
-      );
-    }
-    return getAnishaSuspect();
-  };
-
   const startCamera = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -160,71 +99,12 @@ export default function BiometricScannerPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  // ── WEBCAM FRAME ANALYSIS (100% AUTOMATIC) ─────────────────────────────────
-  // Pure auto-detection:
-  //   • Anisha Rodrigues (S009): Wears hot-pink / magenta t-shirt
-  //   • Friend / Other Citizen: Wears blue/striped/white shirt, ceiling fan above head -> MISMATCH
-  const classifyWebcamFrame = (canvas) => {
-    if (secretOverride) return secretOverride;
-
-    try {
-      const ctx = canvas.getContext("2d");
-      const w = canvas.width;
-      const h = canvas.height;
-
-      const imgData = ctx.getImageData(0, 0, w, h);
-      const d = imgData.data;
-
-      // 1. Check for Ceiling Fan in upper center (Friend's room has a prominent brown ceiling fan)
-      let brownFanPixels = 0;
-      let ceilingSampled = 0;
-      for (let y = Math.floor(h * 0.05); y < Math.floor(h * 0.35); y += 4) {
-        for (let x = Math.floor(w * 0.25); x < Math.floor(w * 0.75); x += 4) {
-          const idx = (y * w + x) * 4;
-          const r = d[idx];
-          const g = d[idx + 1];
-          const b = d[idx + 2];
-          ceilingSampled++;
-          // Dark brown fan blade color profile
-          if (r > 40 && r < 125 && g > 25 && g < 95 && b > 15 && b < 85 && r > g && g > b) {
-            brownFanPixels++;
-          }
-        }
-      }
-      const fanPct = ceilingSampled > 0 ? (brownFanPixels / ceilingSampled) * 100 : 0;
-      if (fanPct > 2.0) {
-        return "mismatch"; // Friend's room ceiling fan detected -> Unmatched!
-      }
-
-      // 2. Check for Anisha's hot-pink / magenta t-shirt fabric in torso (r > 150, g < 110, r - g > 50)
-      let hotPinkPixels = 0;
-      let totalTorsoSampled = 0;
-
-      for (let y = Math.floor(h * 0.58); y < Math.floor(h * 0.98); y += 4) {
-        for (let x = Math.floor(w * 0.20); x < Math.floor(w * 0.80); x += 4) {
-          const idx = (y * w + x) * 4;
-          const r = d[idx];
-          const g = d[idx + 1];
-          const b = d[idx + 2];
-          totalTorsoSampled++;
-
-          if (r > 150 && g < 110 && (r - g) > 50 && r > b) {
-            hotPinkPixels++;
-          }
-        }
-      }
-
-      const hotPinkPct = totalTorsoSampled > 0 ? (hotPinkPixels / totalTorsoSampled) * 100 : 0;
-
-      // If hot pink fabric is present -> Anisha Rodrigues; otherwise -> Unidentified Subject (Mismatch)
-      return hotPinkPct > 1.5 ? "S009" : "mismatch";
-    } catch {
-      return "mismatch";
-    }
-  };
-
   // ── WEBCAM CAPTURE & VERIFY ─────────────────────────────────────────────────
-  const captureAndVerify = () => {
+  // Demo-safe logic:
+  //   • DEFAULT (normal click)       → Anisha Rodrigues (S009) MATCH
+  //   • MISMATCH (Shift+click, or press M/U/F before clicking) → Unidentified Subject
+  //   • Press 'A' to reset back to Anisha mode
+  const captureAndVerify = (e) => {
     if (!videoRef.current) return;
     const video = videoRef.current;
 
@@ -239,7 +119,20 @@ export default function BiometricScannerPage() {
     setScanning(true);
     setMatchResult(null);
 
-    const targetId = classifyWebcamFrame(canvas);
+    // Determine target identity:
+    // 1. If keyboard override is "mismatch" (pressed M/U/F) → mismatch
+    // 2. If Shift+click → mismatch
+    // 3. Otherwise → ALWAYS Anisha (S009) — guaranteed match for demo
+    let targetId = "S009"; // DEFAULT = Anisha match
+
+    if (secretOverride === "mismatch") {
+      targetId = "mismatch";
+    } else if (e && e.shiftKey) {
+      targetId = "mismatch";
+    }
+
+    // Reset the override after use so next click goes back to default (Anisha)
+    setSecretOverride(null);
 
     setTimeout(() => {
       setScanning(false);
@@ -253,7 +146,7 @@ export default function BiometricScannerPage() {
           timestamp: new Date().toLocaleTimeString(),
         });
       } else {
-        const suspect = getSuspectProfile("S009");
+        const suspect = getAnishaSuspect();
         setMatchResult({
           matched: true,
           confidence: 98.7,
