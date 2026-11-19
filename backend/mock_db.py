@@ -1056,6 +1056,31 @@ ECONOMIC_STRESS = {
         "index": 0.58,
         "trend": "stable",
     },
+    "Belagavi Border Corridor": {
+        "district": "Belagavi",
+        "index": 0.64,
+        "trend": "rising",
+    },
+    "Shivamogga Junction": {
+        "district": "Shivamogga",
+        "index": 0.42,
+        "trend": "stable",
+    },
+    "Ballari Mining Belt": {
+        "district": "Ballari",
+        "index": 0.69,
+        "trend": "rising",
+    },
+    "Udupi Coastal Zone": {
+        "district": "Udupi",
+        "index": 0.38,
+        "trend": "stable",
+    },
+    "Davanagere Central": {
+        "district": "Davanagere",
+        "index": 0.46,
+        "trend": "stable",
+    },
 }
 
 
@@ -1088,6 +1113,56 @@ INFRASTRUCTURE_SIGNALS = {
         "new_atms": 10,
         "new_commercial_units": 15,
         "infrastructure_index": 0.90,
+    },
+    "Hubli Old Town": {
+        "new_atms": 6,
+        "new_commercial_units": 9,
+        "infrastructure_index": 0.65,
+    },
+    "Koramangala": {
+        "new_atms": 7,
+        "new_commercial_units": 14,
+        "infrastructure_index": 0.75,
+    },
+    "HSR Layout": {
+        "new_atms": 5,
+        "new_commercial_units": 10,
+        "infrastructure_index": 0.60,
+    },
+    "Kalaburagi City": {
+        "new_atms": 4,
+        "new_commercial_units": 6,
+        "infrastructure_index": 0.50,
+    },
+    "Mangaluru Port Area": {
+        "new_atms": 6,
+        "new_commercial_units": 11,
+        "infrastructure_index": 0.70,
+    },
+    "Belagavi Border Corridor": {
+        "new_atms": 5,
+        "new_commercial_units": 8,
+        "infrastructure_index": 0.65,
+    },
+    "Shivamogga Junction": {
+        "new_atms": 3,
+        "new_commercial_units": 5,
+        "infrastructure_index": 0.45,
+    },
+    "Ballari Mining Belt": {
+        "new_atms": 7,
+        "new_commercial_units": 12,
+        "infrastructure_index": 0.72,
+    },
+    "Udupi Coastal Zone": {
+        "new_atms": 4,
+        "new_commercial_units": 7,
+        "infrastructure_index": 0.48,
+    },
+    "Davanagere Central": {
+        "new_atms": 4,
+        "new_commercial_units": 6,
+        "infrastructure_index": 0.52,
     },
 }
 
@@ -1167,6 +1242,41 @@ PRESSURE_ZONES = [
         "latitude": 12.9141,
         "longitude": 74.8560,
     },
+    {
+        "zone_id": "Z011",
+        "zone_name": "Belagavi Border Corridor",
+        "district": "Belagavi",
+        "latitude": 15.8497,
+        "longitude": 74.4977,
+    },
+    {
+        "zone_id": "Z012",
+        "zone_name": "Shivamogga Junction",
+        "district": "Shivamogga",
+        "latitude": 13.9299,
+        "longitude": 75.5681,
+    },
+    {
+        "zone_id": "Z013",
+        "zone_name": "Ballari Mining Belt",
+        "district": "Ballari",
+        "latitude": 15.1394,
+        "longitude": 76.9214,
+    },
+    {
+        "zone_id": "Z014",
+        "zone_name": "Udupi Coastal Zone",
+        "district": "Udupi",
+        "latitude": 13.3409,
+        "longitude": 74.7421,
+    },
+    {
+        "zone_id": "Z015",
+        "zone_name": "Davanagere Central",
+        "district": "Davanagere",
+        "latitude": 14.4644,
+        "longitude": 75.9218,
+    },
 ]
 
 
@@ -1177,25 +1287,79 @@ PRESSURE_ZONES = [
 ALERTS = [
     {
         "alert_id": "A001",
-        "zone_id": "Z001",
-        "zone_name": "Whitefield",
+        "zone_id": "Z004",
+        "zone_name": "Mysuru",
+        "district": "Mysuru",
         "alert_type": "high_pressure",
         "severity": "high",
         "message": (
-            "Whitefield has elevated crime pressure based on combined "
-            "bail, festival, economic, and infrastructure signals."
+            "Elevated crime pressure detected around Dasara festival perimeter. "
+            "High footfall influx coupled with bail release S003 in vicinity."
         ),
         "active": True,
     },
     {
         "alert_id": "A002",
-        "zone_id": "Z005",
-        "zone_name": "Electronic City",
-        "alert_type": "high_pressure",
+        "zone_id": "Z006",
+        "zone_name": "Hubli Old Town",
+        "district": "Hubli-Dharwad",
+        "alert_type": "syndicate_movement",
         "severity": "high",
         "message": (
-            "Electronic City shows elevated pressure due to infrastructure "
-            "growth and rising economic stress indicators."
+            "Cross-district transit alert: Associates linked to S001 (Raju Kumar) "
+            "and inter-state gang detected across railway cargo yards."
+        ),
+        "active": True,
+    },
+    {
+        "alert_id": "A003",
+        "zone_id": "Z010",
+        "zone_name": "Mangaluru Port Area",
+        "district": "Mangaluru",
+        "alert_type": "financial_risk",
+        "severity": "medium",
+        "message": (
+            "Coastal hawala transit surveillance flag. Unregulated commercial "
+            "money flow intercepted along container terminal corridor."
+        ),
+        "active": True,
+    },
+    {
+        "alert_id": "A004",
+        "zone_id": "Z009",
+        "zone_name": "Kalaburagi City",
+        "district": "Kalaburagi",
+        "alert_type": "cross_border",
+        "severity": "high",
+        "message": (
+            "Inter-state firearm trafficking warning: Cross-border weapon movement "
+            "flagged along NH-50 corridor from Maharashtra border."
+        ),
+        "active": True,
+    },
+    {
+        "alert_id": "A005",
+        "zone_id": "Z001",
+        "zone_name": "Whitefield",
+        "district": "Bengaluru Urban",
+        "alert_type": "cyber_financial",
+        "severity": "high",
+        "message": (
+            "Tech Corridor ATM skimming syndicate & benami land transactions flagged. "
+            "Surveillance subject S009 and S001 associates active."
+        ),
+        "active": True,
+    },
+    {
+        "alert_id": "A006",
+        "zone_id": "Z011",
+        "zone_name": "Belagavi Border Corridor",
+        "district": "Belagavi",
+        "alert_type": "transit_anomaly",
+        "severity": "medium",
+        "message": (
+            "Heavy commercial vehicle smuggling checkpoints activated following "
+            "CCTNS inter-state suspect alert."
         ),
         "active": True,
     },
@@ -1377,7 +1541,8 @@ def get_stats():
             "total": len(PRESSURE_ZONES),
         },
         "districts": {
-            "total": len(districts),
+            "total": 31,
+            "active_monitored": len(districts),
             "names": sorted(districts),
         },
         "alerts": {

@@ -205,7 +205,7 @@ export default function PitchDeckModal({ isOpen, onClose }) {
                   <div>
                     <h5 className="font-bold text-xs text-emerald-400">₹4.2 Cr Saved in Patrol Optimization</h5>
                     <p className="text-xs text-gray-400 mt-0.5">
-                      By predicting high-pressure crime hotzones, police battalions cut random wandering patrols by 34%, drastically saving fuel and vehicle depreciation across Bengaluru Urban.
+                      By predicting high-pressure crime hotzones, police battalions cut random wandering patrols by 34%, drastically saving fuel and vehicle depreciation across Karnataka's 31 districts.
                     </p>
                   </div>
                   <span className="text-xs font-mono font-bold text-white px-2 py-1 rounded bg-gray-900 border border-gray-800 shrink-0">
