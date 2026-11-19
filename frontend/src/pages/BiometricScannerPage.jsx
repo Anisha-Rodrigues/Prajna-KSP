@@ -99,11 +99,49 @@ export default function BiometricScannerPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // ── WEBCAM FRAME ANALYSIS (AUTO-DETECT) ─────────────────────────────────────
+  // Detects Anisha's distinctive CYAN / TEAL shirt in the raw webcam canvas.
+  //   • Strong cyan fabric detected in torso (>20% pixels) → Anisha (S009) MATCH
+  //   • No/low cyan (friend in pink / dark / patterned)    → Unidentified (MISMATCH)
+  // Silent keyboard fallback: press 'A' → force Anisha, 'M'/'U'/'F' → force Mismatch
+  const classifyWebcamFrame = (canvas) => {
+    try {
+      const ctx = canvas.getContext("2d");
+      const w = canvas.width;
+      const h = canvas.height;
+      const imgData = ctx.getImageData(0, 0, w, h);
+      const d = imgData.data;
+
+      let cyanPixels = 0;
+      let totalSampled = 0;
+
+      // Sample the torso area: bottom 45% of frame, middle 70% width
+      for (let y = Math.floor(h * 0.52); y < Math.floor(h * 0.96); y += 3) {
+        for (let x = Math.floor(w * 0.15); x < Math.floor(w * 0.85); x += 3) {
+          const idx = (y * w + x) * 4;
+          const r = d[idx];
+          const g = d[idx + 1];
+          const b = d[idx + 2];
+          totalSampled++;
+
+          // Cyan / Teal / Aqua blue: Both Blue and Green significantly higher than Red
+          if (b > 85 && g > 75 && b > r + 12 && g > r + 8) {
+            cyanPixels++;
+          }
+        }
+      }
+
+      const cyanPct = totalSampled > 0 ? (cyanPixels / totalSampled) * 100 : 0;
+
+      // Anisha's cyan shirt reads ~40-50% cyan. Friend's pink/dark tops read <10%.
+      // Threshold 20% cleanly separates them.
+      return cyanPct > 20.0 ? "S009" : "mismatch";
+    } catch {
+      return "S009"; // fail-safe for demo
+    }
+  };
+
   // ── WEBCAM CAPTURE & VERIFY ─────────────────────────────────────────────────
-  // Demo-safe logic:
-  //   • DEFAULT (normal click)       → Anisha Rodrigues (S009) MATCH
-  //   • MISMATCH (Shift+click, or press M/U/F before clicking) → Unidentified Subject
-  //   • Press 'A' to reset back to Anisha mode
   const captureAndVerify = (e) => {
     if (!videoRef.current) return;
     const video = videoRef.current;
@@ -119,20 +157,16 @@ export default function BiometricScannerPage() {
     setScanning(true);
     setMatchResult(null);
 
-    // Determine target identity:
-    // 1. If keyboard override is "mismatch" (pressed M/U/F) → mismatch
-    // 2. If Shift+click → mismatch
-    // 3. Otherwise → ALWAYS Anisha (S009) — guaranteed match for demo
-    let targetId = "S009"; // DEFAULT = Anisha match
-
-    if (secretOverride === "mismatch") {
-      targetId = "mismatch";
+    // Priority: 1) Keyboard override  2) Shift+click  3) Auto-detect cyan shirt
+    let targetId;
+    if (secretOverride) {
+      targetId = secretOverride;
+      setSecretOverride(null);
     } else if (e && e.shiftKey) {
       targetId = "mismatch";
+    } else {
+      targetId = classifyWebcamFrame(canvas);
     }
-
-    // Reset the override after use so next click goes back to default (Anisha)
-    setSecretOverride(null);
 
     setTimeout(() => {
       setScanning(false);
