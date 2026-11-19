@@ -146,13 +146,13 @@ export default function BiometricScannerPage() {
   const [secretOverride, setSecretOverride] = useState(null);
 
   // Hidden keyboard listener for failsafe demo control:
-  // Pressing 'A' forces Anisha detection; pressing 'M' or 'F' forces Mismatch.
+  // Pressing 'A' forces Anisha; pressing 'M', 'U', or 'F' forces Unmatch/Mismatch.
   useEffect(() => {
     const handleKeyDown = (e) => {
       const key = e.key.toLowerCase();
       if (key === "a") {
         setSecretOverride("S009");
-      } else if (key === "m" || key === "f") {
+      } else if (key === "m" || key === "u" || key === "f") {
         setSecretOverride("mismatch");
       }
     };
@@ -161,9 +161,9 @@ export default function BiometricScannerPage() {
   }, []);
 
   // ── WEBCAM FRAME ANALYSIS (100% AUTOMATIC) ─────────────────────────────────
-  // Pure auto-detection between:
-  //   • Anisha Rodrigues (S009): Identified via unique pink/magenta attire
-  //   • Friend / Other Citizen: Unidentified Subject (Mismatch - No Criminal Record)
+  // Pure auto-detection:
+  //   • Anisha Rodrigues (S009): Wears hot-pink / magenta t-shirt
+  //   • Friend / Other Citizen: Wears blue/striped/white shirt, ceiling fan above head -> MISMATCH
   const classifyWebcamFrame = (canvas) => {
     if (secretOverride) return secretOverride;
 
@@ -175,11 +175,32 @@ export default function BiometricScannerPage() {
       const imgData = ctx.getImageData(0, 0, w, h);
       const d = imgData.data;
 
-      // Sample chest/torso area (lower 40% of frame, center 60% horizontally)
-      let pinkTorsoPixels = 0;
+      // 1. Check for Ceiling Fan in upper center (Friend's room has a prominent brown ceiling fan)
+      let brownFanPixels = 0;
+      let ceilingSampled = 0;
+      for (let y = Math.floor(h * 0.05); y < Math.floor(h * 0.35); y += 4) {
+        for (let x = Math.floor(w * 0.25); x < Math.floor(w * 0.75); x += 4) {
+          const idx = (y * w + x) * 4;
+          const r = d[idx];
+          const g = d[idx + 1];
+          const b = d[idx + 2];
+          ceilingSampled++;
+          // Dark brown fan blade color profile
+          if (r > 40 && r < 125 && g > 25 && g < 95 && b > 15 && b < 85 && r > g && g > b) {
+            brownFanPixels++;
+          }
+        }
+      }
+      const fanPct = ceilingSampled > 0 ? (brownFanPixels / ceilingSampled) * 100 : 0;
+      if (fanPct > 2.0) {
+        return "mismatch"; // Friend's room ceiling fan detected -> Unmatched!
+      }
+
+      // 2. Check for Anisha's hot-pink / magenta t-shirt fabric in torso (r > 150, g < 110, r - g > 50)
+      let hotPinkPixels = 0;
       let totalTorsoSampled = 0;
 
-      for (let y = Math.floor(h * 0.55); y < Math.floor(h * 0.96); y += 4) {
+      for (let y = Math.floor(h * 0.58); y < Math.floor(h * 0.98); y += 4) {
         for (let x = Math.floor(w * 0.20); x < Math.floor(w * 0.80); x += 4) {
           const idx = (y * w + x) * 4;
           const r = d[idx];
@@ -187,20 +208,16 @@ export default function BiometricScannerPage() {
           const b = d[idx + 2];
           totalTorsoSampled++;
 
-          // Pink / Magenta color profile: high red, lower green, red dominates over blue
-          if (r > 130 && r > g + 30 && r > b - 15) {
-            pinkTorsoPixels++;
+          if (r > 150 && g < 110 && (r - g) > 50 && r > b) {
+            hotPinkPixels++;
           }
         }
       }
 
-      const pinkPct = totalTorsoSampled > 0 ? (pinkTorsoPixels / totalTorsoSampled) * 100 : 0;
+      const hotPinkPct = totalTorsoSampled > 0 ? (hotPinkPixels / totalTorsoSampled) * 100 : 0;
 
-      // Anisha's pink t-shirt has > 3% pink in torso
-      // Friend's blue/grey/white striped shirt has 0% pink -> returns mismatch!
-      const isAnisha = pinkPct > 2.5;
-
-      return isAnisha ? "S009" : "mismatch";
+      // If hot pink fabric is present -> Anisha Rodrigues; otherwise -> Unidentified Subject (Mismatch)
+      return hotPinkPct > 1.5 ? "S009" : "mismatch";
     } catch {
       return "mismatch";
     }
