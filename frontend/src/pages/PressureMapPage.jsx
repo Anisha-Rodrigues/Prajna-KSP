@@ -7,7 +7,7 @@ export default function PressureMapPage() {
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <h2 className="font-bold text-sm text-white tracking-wide">
-            Karnataka State — Predictive Crime Pressure Map (Interactive GIS)
+            All-India &amp; State Crime Intelligence — Predictive Pressure Map (Google Maps GIS Grid)
           </h2>
         </div>
         <span className="text-[11px] text-slate-400 font-mono hidden sm:inline">
